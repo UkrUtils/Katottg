@@ -1,145 +1,155 @@
-# UkrUtils.Katottg — посібник для AI-агентів
+# UkrUtils.Katottg — guide for AI agents
 
-Стислий довідник для агентів, які пишуть код **з використанням** бібліотеки. Як змінювати саму
-бібліотеку, описано в `AGENTS.md` у корені репозиторію. Людська документація — у `README.md`.
+> Українською: [Docs/uk/AgentGuide.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/uk/AgentGuide.md)
 
-Де знайти цей файл: у корені кожного NuGet-пакета (`~/.nuget/packages/ukrutils.katottg/<версія>/AgentGuide.md`,
-на Windows — `%USERPROFILE%\.nuget\packages\...`) — саме для встановленої версії; онлайн —
-https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md (остання версія).
+A concise reference for agents that write code **using** the library. How to change the library itself
+is described in `AGENTS.md` at the repository root. The full human documentation is at
+https://ukrutils.github.io/Katottg/ (API: https://ukrutils.github.io/Katottg/api).
 
-## Що це
+Where to find this file: in the root of every NuGet package
+(`~/.nuget/packages/ukrutils.katottg/<version>/AgentGuide.md`, on Windows `%USERPROFILE%\.nuget\packages\...`),
+for exactly the installed version; online, for the latest version:
+https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
 
-КАТОТТГ — офіційний український кодифікатор адміністративно-територіальних одиниць. Кожен об’єкт
-(область, район, громада, населений пункт, район у місті) має код `UA` + 17 цифр. Бібліотека містить
-вбудовану офіційну редакцію (31 751 запис) і працює без мережі.
+## What it is
+
+KATOTTG is the official Ukrainian codifier of administrative-territorial units. Every unit (region,
+district, community, settlement, city district) has a code `UA` + 17 digits. The library contains the
+embedded official edition (31,751 records) and works without a network. Unit names are Ukrainian, as in
+the official file.
 
 ```csharp
-using UkrUtils.Katottg;                 // усе основне
-using UkrUtils.Katottg.Search;          // лише KatottgNormalizer, ApostropheHandling
-using UkrUtils.Katottg.Import;          // пакет UkrUtils.Katottg.Import: розбір xlsx
+using UkrUtils.Katottg;                 // the main types
+using UkrUtils.Katottg.Search;          // only KatottgNormalizer, ApostropheHandling
+using UkrUtils.Katottg.Import;          // the UkrUtils.Katottg.Import package: xlsx parsing
 
-var katottg = KatottgDataset.Embedded;  // синглтон; незмінний; потокобезпечний
+var katottg = KatottgDataset.Embedded;  // singleton; immutable; thread-safe
 ```
 
-## Правила (обов’язково)
+## Rules (mandatory)
 
-1. **Ключ — код, ніколи не назва.** Назви повторюються («Іванівка» — 120 разів), однакові назви є навіть
-   в одній громаді (місто й селище «Липовець»). Показуючи об’єкт людині, завжди виводьте категорію
-   (`DisplayName`) або повну адресу (`FullName`).
-2. **У БД зберігайте лише код найнижчого рівня.** Він унікальний. Батьків отримуйте з
-   `Find(code)` або фільтруйте в SQL за `code.HierarchyPrefix` (`LIKE 'UA2302%'`). Окремі колонки з
-   кодами області чи громади — лише як денормалізація для індексів.
-3. **Не вигадуйте коди і не обчислюйте код батька з коду дитини.** `ParentPrefix` — лише префікс без
-   хвоста; справжній батько — `unit.Parent` або `FindBySignificantPart(code.ParentPrefix.Value)`.
-4. **Не визначайте рівень за номером сегмента чи колонки.** Київ і Севастополь (`K`) не мають району й
-   громади; Прип’ять і Чорнобиль (`M`) лежать прямо під областю; райони в містах (`B`) є і під `M`.
-   Використовуйте `Region` / `District` / `Community` / `PopulatedPlace` / `CityDistrict`: вони
-   дорівнюють `null`, якщо рівня немає.
-5. **Не парсіть адресу самостійно**, передайте рядок у `Search(...)`. Він сам розуміє маркери
-   (`с.`, `м.`, `смт`, `р-н`, `обл.`, `громада`, `ТГ`), коми, зайві частини (вулиця, індекс),
-   апострофи, дефіси, латинські двійники, регістр.
-6. **Перевіряйте `Best` на `null`** і, якщо результатів кілька з близькою `Score`, не обирайте
-   мовчки: покажіть варіанти користувачеві.
-7. **`IsTemporarilyNotInForce`** = `true` для АР Крим і Севастополя: їхні коди набирають чинності після
-   повернення територій. Не відкидайте ці об’єкти мовчки, але враховуйте прапорець.
+1. **The key is the code, never the name.** Names repeat ("Іванівка" — 120 times), and identical names
+   exist even within one community (the city and the settlement "Липовець"). When showing a unit to a
+   person, always output the category (`DisplayName`) or the full address (`FullName`).
+2. **In the DB store only the lowest-level code.** It is unique. Get the parents from `Find(code)` or
+   filter in SQL by `code.HierarchyPrefix` (`LIKE 'UA2302%'`). Separate columns with region or community
+   codes are only denormalization for indexes.
+3. **Don't invent codes and don't compute a parent's code from a child's code.** `ParentPrefix` is only
+   a prefix without the tail; the real parent is `unit.Parent` or
+   `FindBySignificantPart(code.ParentPrefix.Value)`.
+4. **Don't determine the level by segment or column number.** Kyiv and Sevastopol (`K`) have no district
+   or community; Prypiat and Chornobyl (`M`) sit directly under a region; city districts (`B`) exist
+   under `M` too. Use `Region` / `District` / `Community` / `PopulatedPlace` / `CityDistrict`: they are
+   `null` if the level does not exist.
+5. **Don't parse an address yourself**, pass the string to `Search(...)`. It understands the markers
+   (`с.`, `м.`, `смт`, `р-н`, `обл.`, `громада`, `ТГ`), commas, extra parts (street, postal code),
+   apostrophes, hyphens, Latin look-alikes, and case on its own.
+6. **Check `Best` for `null`**, and if there are several results with close `Score`, don't pick silently:
+   show the options to the user. `Score` is comparable only within one search.
+7. **`IsTemporarilyNotInForce`** = `true` for AR Crimea and Sevastopol: their codes take effect after the
+   territories return. Don't silently discard these units, but take the flag into account.
+8. **Handle `KatottgCategory.Unknown`.** Future editions may add category letters; don't write an
+   exhaustive `switch` that throws on an unknown value.
 
-## Карта API
+## API map
 
-| Задача | Виклик |
+| Task | Call |
 |---|---|
-| розібрати / перевірити код | `KatottgCode.Parse(s)`, `KatottgCode.TryParse(s, out var c)` |
-| об’єкт за кодом | `katottg.Find(code)` → `KatottgUnit?`; `katottg.TryFind("UA…", out var u)` |
-| код із втраченим або неправильним хвостом | `katottg.FindBySignificantPart(code)` |
-| пошук за назвою / адресою / кодом | `katottg.Search("…", new KatottgSearchOptions { Limit, Categories, Within })` → `.Hits`, `.Best` |
-| структурований пошук | `katottg.Search(new KatottgQuery { Name, Region, District, Community, Categories, Limit })` |
-| усі рівні адреси з кодами (DTO) | `unit.ToAddress()` → `KatottgAddress { Region, District?, Community?, PopulatedPlace?, CityDistrict? }` |
-| шлях від області до об’єкта | `unit.Path`; предки — `unit.Ancestors()` |
-| діти / піддерево | `unit.Children`, `unit.Descendants()` |
-| корені дерева | `katottg.Regions` (24 області, АР Крим, Київ, Севастополь) |
-| дерево результатів для UI | `katottg.Search("…").ToTree()` або `KatottgTreeNode.Build(units, includeDescendants)` |
-| чи об’єкт усередині іншого | `ancestor.Contains(unit)` (за об’єктами) або `code.IsDescendantOf(ancestorCode)` (лише за цифрами) |
-| SQL-префікс піддерева | `unit.Code.HierarchyPrefix` → `"UA0102"` |
-| усі об’єкти категорії | `katottg.GetByCategory(KatottgCategory.City)` |
-| версія даних | `katottg.Edition.Date`, `.Source`, `.Sha256` |
-| імпорт нового офіційного xlsx | `KatottgSheetParser.Parse(path)` → `.Report`, `.CreateDataset()` |
-| зберегти / завантажити знімок | `dataset.Save(stream)`, `KatottgDataset.Load(stream)` |
+| parse / validate a code | `KatottgCode.Parse(s)`, `KatottgCode.TryParse(s, out var c)` |
+| unit by code | `katottg.Find(code)` → `KatottgUnit?`; `katottg.TryFind("UA…", out var u)` |
+| code with a lost or wrong tail | `katottg.FindBySignificantPart(code)` |
+| search by name / address / code | `katottg.Search("…", new KatottgSearchOptions { Limit, Categories, Within })` → `.Hits`, `.Best` |
+| structured search | `katottg.Search(new KatottgQuery { Name, Region, District, Community, Categories, Limit })` |
+| all address levels with codes (DTO) | `unit.ToAddress()` → `KatottgAddress { Region, District?, Community?, PopulatedPlace?, CityDistrict? }` |
+| path from the region to the unit | `unit.Path`; ancestors — `unit.Ancestors()` |
+| children / subtree | `unit.Children`, `unit.Descendants()` |
+| tree roots | `katottg.Regions` (24 regions, AR Crimea, Kyiv, Sevastopol) |
+| result tree for a UI | `katottg.Search("…").ToTree()` or `KatottgTreeNode.Build(units, includeDescendants)` |
+| whether a unit is inside another | `ancestor.Contains(unit)` (by objects) or `code.IsDescendantOf(ancestorCode)` (by digits only) |
+| SQL prefix of a subtree | `unit.Code.HierarchyPrefix` → `"UA0102"` |
+| all units of a category | `katottg.GetByCategory(KatottgCategory.City)` |
+| data version | `katottg.Edition.Date`, `.Source`, `.Sha256` |
+| import a new official xlsx | `KatottgSheetParser.Parse(path)` → `.Report`, `.CreateDataset()` |
+| save / load a snapshot | `dataset.Save(stream)`, `KatottgDataset.Load(stream)` |
 
-### Категорії (`KatottgCategory`)
+### Categories (`KatottgCategory`)
 
-| Літера | Значення | Типовий батько | `DisplayName` |
+| Letter | Value | Typical parent | `DisplayName` |
 |---|---|---|---|
-| `O` | `Region` — область, АР Крим | — | «Харківська обл.», «АР Крим» |
-| `K` | `SpecialStatusCity` — Київ, Севастополь | — | «м. Київ» |
-| `P` | `District` — район | `O` | «Харківський р-н» |
-| `H` | `Community` — територіальна громада | `P` | «Харківська громада» |
-| `M` | `City` — місто | `H` (Прип’ять, Чорнобиль — `O`) | «м. Харків» |
-| `T` | `UrbanTypeSettlement` — СМТ | `H` | «смт Андріївка» |
-| `X` | `Settlement` — селище | `H` | «с-ще Липовець» |
-| `C` | `Village` — село | `H` | «с. Андріївка» |
-| `B` | `CityDistrict` — район у місті | `M` або `K` | «Шевченківський р-н» |
-| — | `Unknown` — невідома літера (майбутні редакції) | | |
+| `O` | `Region` — region, AR Crimea | — | "Харківська обл.", "АР Крим" |
+| `K` | `SpecialStatusCity` — Kyiv, Sevastopol | — | "м. Київ" |
+| `P` | `District` — district | `O` | "Харківський р-н" |
+| `H` | `Community` — territorial community | `P` | "Харківська громада" |
+| `M` | `City` — city | `H` (Prypiat, Chornobyl — `O`) | "м. Харків" |
+| `T` | `UrbanTypeSettlement` — urban-type settlement | `H` | "смт Андріївка" |
+| `X` | `Settlement` — settlement | `H` | "с-ще Липовець" |
+| `C` | `Village` — village | `H` | "с. Андріївка" |
+| `B` | `CityDistrict` — city district | `M` or `K` | "Шевченківський р-н" |
+| — | `Unknown` — unknown letter (future editions) | | |
 
-`category.IsPopulatedPlace()` дає `true` для M, T, X, C, K.
+`category.IsPopulatedPlace()` returns `true` for M, T, X, C, K.
 
-## Рецепти
+## Recipes
 
-**Нормалізувати адресу з довільного тексту до коду:**
+**Normalize an address from arbitrary text to a code:**
 
 ```csharp
 var result = katottg.Search(userText);
-if (result.Best is not { } best) return null;                       // нічого не знайдено
+if (result.Best is not { } best) return null;                       // nothing found
 var ambiguous = result.Hits.Count > 1 && result.Hits[1].Score >= best.Score - 0.01;
 return ambiguous ? AskUser(result.Hits) : best.Unit.Code;
 ```
 
-**Відповідь API з повною ієрархією:**
+**An API response with the full hierarchy:**
 
 ```csharp
 KatottgAddress address = katottg.Find(code)!.ToAddress();
 // { Code, Category, Name, FullName, Region{Code,Name,...}, District?, Community?, PopulatedPlace?, CityDistrict? }
 ```
 
-**Каскадні списки «область → район → громада → населений пункт»:**
+**Cascading lists "region → district → community → settlement":**
 
 ```csharp
-var regions     = katottg.Regions;                                   // 1-й список
-var districts   = region.Children;                                   // P (для Києва — одразу B)
+var regions     = katottg.Regions;                                   // 1st list
+var districts   = region.Children;                                   // P (for Kyiv — B directly)
 var communities = district.Children;                                 // H
 var places      = community.Children;                                // M/T/X/C
 ```
 
-Не вважайте, що в кожної області є райони і т. д.: перевіряйте `Category` дітей.
+Don't assume every region has districts, and so on: check the `Category` of the children.
 
-**Усі населені пункти громади, відсортовані за назвою:**
+**All settlements of a community, sorted by name:**
 
 ```csharp
 var places = community.Children.Where(u => u.Category.IsPopulatedPlace()).OrderBy(u => u.Name, StringComparer.Create(new("uk-UA"), false));
 ```
 
-**Перевірка коду з форми:**
+**Validating a code from a form:**
 
 ```csharp
-if (!KatottgCode.TryParse(input, out var code)) return "Невірний формат: потрібно UA і 17 цифр";
+if (!KatottgCode.TryParse(input, out var code)) return "Invalid format: UA and 17 digits required";
 var unit = katottg.Find(code) ?? katottg.FindBySignificantPart(code);
-if (unit is null) return "Такого коду немає в чинній редакції";
+if (unit is null) return "No such code in the current edition";
 ```
 
-**Фільтр «усе в районі» в EF Core / SQL без бібліотеки на сервері:**
+**An "everything in the district" filter in EF Core / SQL without the library on the server:**
 
 ```csharp
 var prefix = district.Code.HierarchyPrefix;                          // "UA2302"
-query.Where(a => a.KatottgCode.StartsWith(prefix));                  // колонка char(19)
+query.Where(a => a.KatottgCode.StartsWith(prefix));                  // a char(19) column
 ```
 
-## Що бібліотека поки НЕ вміє (не обіцяйте користувачеві)
+## What the library can NOT do yet (don't promise this to the user)
 
-- нечіткий пошук з друкарськими помилками («Кривий Рыг» ≠ «Кривий Ріг»), пошук латиницею (`Kyiv`);
-- порівняння редакцій і міграцію старих кодів (`KatottgDiff`);
-- КОАТУУ ↔ КАТОТТГ; історію кодів на дату; перелік окупованих територій;
-- автоматичне оновлення з сайту міністерства (дані оновлюються з новою версією пакета);
-- JSON-конвертер і EF Core `ValueConverter` для `KatottgCode`: поки використовуйте `ToString()` / `Parse`.
+- fuzzy search with typos ("Кривий Рыг" ≠ "Кривий Ріг"), search in Latin script (`Kyiv`);
+- edition comparison and migration of old codes (`KatottgDiff`);
+- KOATUU ↔ KATOTTG; code history for a given date; a list of occupied territories;
+- automatic updates from the ministry's website (the data is updated with a new package version);
+- a JSON converter and an EF Core `ValueConverter` for `KatottgCode`: for now use `ToString()` / `Parse`.
 
-## CLI для швидких перевірок
+The plans are at https://ukrutils.github.io/Katottg/roadmap.
+
+## CLI for quick checks
 
 ```bash
 katottg search "Шевченківський р-н, м. Харків" --tree

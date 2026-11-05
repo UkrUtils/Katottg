@@ -1,7 +1,7 @@
 namespace UkrUtils.Katottg.Tests;
 
 /// <summary>
-/// Приклади з README.md і Docs/AgentGuide.md. Якщо тест падає — оновіть документацію разом із кодом.
+/// Приклади з README.md, Docs/Api.md і Docs/AgentGuide.md (та їхніх дзеркал у Docs/uk/). Якщо тест падає — оновіть документацію разом із кодом.
 /// </summary>
 public class DocsExamplesTests
 {
