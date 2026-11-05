@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>UkrUtils.Katottg.Import</RootNamespace>
+        <IsAotCompatible>true</IsAotCompatible>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <PackageId>UkrUtils.Katottg.Import</PackageId>
+        <Description>Імпорт офіційного xlsx-файлу КАТОТТГ без сторонніх залежностей.</Description>
+        <PackageTags>katottg;ukraine;codifier;xlsx;import</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\UkrUtils.Katottg\UkrUtils.Katottg.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="UkrUtils.Katottg.Tests" />
+    </ItemGroup>
+
+</Project>
