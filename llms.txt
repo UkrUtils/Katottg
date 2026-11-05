@@ -6,10 +6,10 @@ Key rules: the KATOTTG code ("UA" + 17 digits) is the unique key, never the name
 
 ## Docs
 
-- [Agent guide](Docs/AgentGuide.md): rules, API map, recipes, limitations — start here when writing code that uses the library
-- [README](README.md): full usage documentation with examples
-- [AGENTS.md](AGENTS.md): how to build, test and change the library itself; updating the embedded data
+- [Agent guide](https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md): rules, API map, recipes, limitations — start here when writing code that uses the library
+- [README](https://github.com/UkrUtils/Katottg/blob/main/README.md): full usage documentation with examples
+- [AGENTS.md](https://github.com/UkrUtils/Katottg/blob/main/AGENTS.md): how to build, test and change the library itself; updating the embedded data
 
 ## Optional
 
-- [Implementation plan](Docs/ImplementationPlan.md): domain analysis of the official file, design principles, roadmap (stages 7–12)
+- [Implementation plan](https://github.com/UkrUtils/Katottg/blob/main/Docs/ImplementationPlan.md): domain analysis of the official file, design principles, roadmap (stages 7–12)

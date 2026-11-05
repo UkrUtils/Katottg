@@ -57,6 +57,32 @@ Docs/                               план, посібник для агент
 Знімок не редагуйте вручну. Формат описано в `Storage/SnapshotFormat.cs`. Якщо формат змінюється,
 підвищуйте `SnapshotFormat.Version`.
 
+## Реліз
+
+Реліз запускається однією кнопкою: **Actions → Release → Run workflow** (гілка `main`).
+Workflow лежить у [.github/workflows/release.yml](.github/workflows/release.yml).
+
+1. У PR підвищте `PackageVersion` (а також `FileVersion`, `AssemblyVersion`,
+   `InformationalVersion`, `VersionDate`) у `Source/Directory.Build.props` і злийте його в `main`.
+   Версія з дефісом (`1.1.0-beta.1`) стає prerelease.
+2. Запустіть **Release**. Спершу можна прогнати з `dry-run`: тоді workflow лише збере, протестує й
+   викладе пакети як артефакт, з будь-якої гілки.
+3. Workflow відмовить, якщо тег `v<версія>` уже існує. Інакше він опублікує три пакети (`.nupkg` +
+   `.snupkg`) на nuget.org і створить тег та GitHub Release з пакетами й автоматичними нотатками.
+   Повторний запуск після часткового збою безпечний (`--skip-duplicate`).
+
+Одноразове налаштування:
+
+- **nuget.org → Trusted Publishing** (меню акаунта): додайте політику з такими полями:
+  Repository Owner `UkrUtils`, Repository `Katottg`, Workflow File `release.yml`, Environment `nuget`.
+  Для першої публікації ID пакетів мають бути вільні або вже належати цьому акаунту.
+- **GitHub → Settings → Environments**: створіть середовище `nuget`. За бажання обмежте його гілкою
+  `main` і додайте обов’язкових рецензентів (тоді «одна кнопка» плюс схвалення).
+- **GitHub → Settings → Secrets and variables → Actions → Variables**: змінна `NUGET_USER` — ім’я
+  профілю на nuget.org, а не email.
+
+API-ключі не зберігаються: `NuGet/login` обмінює OIDC-токен GitHub на короткоживучий ключ.
+
 ## Правила коду
 
 - **Ядро — без залежностей і без рефлексії** (`IsAotCompatible=true`), без `System.Text.Json`.
