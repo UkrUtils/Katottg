@@ -3,8 +3,8 @@ using System.Text;
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Об’єкт кодифікатора: область, район, громада, населений пункт або район у місті.
-/// Незмінний; посилання на батька й дітей будуються один раз під час завантаження набору.
+/// Codifier object: region, district, community, populated place, or city district.
+/// Immutable; references to the parent and children are built once when the dataset is loaded.
 /// </summary>
 public sealed class KatottgUnit
 {
@@ -25,46 +25,46 @@ public sealed class KatottgUnit
         CityDistrict = category == KatottgCategory.CityDistrict ? this : null;
     }
 
-    /// <summary>Позиція в <see cref="KatottgDataset.All"/>.</summary>
+    /// <summary>Position in <see cref="KatottgDataset.All"/>.</summary>
     internal int Index { get; }
 
-    /// <summary>Код об’єкта.</summary>
+    /// <summary>Object code.</summary>
     public KatottgCode Code { get; }
 
-    /// <summary>Категорія об’єкта.</summary>
+    /// <summary>Object category.</summary>
     public KatottgCategory Category { get; }
 
-    /// <summary>Назва, як в офіційному файлі (без пробілів по краях).</summary>
+    /// <summary>Name as in the official file (without surrounding whitespace).</summary>
     public string Name { get; }
 
-    /// <summary>Батьківський об’єкт; <c>null</c> для областей і міст зі спеціальним статусом.</summary>
+    /// <summary>Parent object; <c>null</c> for regions and cities with special status.</summary>
     public KatottgUnit? Parent { get; }
 
-    /// <summary>Дочірні об’єкти в порядку офіційного файлу.</summary>
+    /// <summary>Child objects in the order of the official file.</summary>
     public IReadOnlyList<KatottgUnit> Children { get; private set; } = s_noChildren;
 
-    /// <summary>Фактична глибина в дереві: 0 — область або місто зі спецстатусом.</summary>
+    /// <summary>Actual depth in the tree: 0 — a region or a city with special status.</summary>
     public int Depth { get; }
 
-    /// <summary>Корінь гілки: область (<c>O</c>) або місто зі спеціальним статусом (<c>K</c>). Для кореня — він сам.</summary>
+    /// <summary>Root of the branch: region (<c>O</c>) or city with special status (<c>K</c>). For a root, itself.</summary>
     public KatottgUnit Region { get; }
 
-    /// <summary>Район (<c>P</c>), до якого належить об’єкт (або він сам); <c>null</c>, якщо району немає (Київ, Прип’ять).</summary>
+    /// <summary>District (<c>P</c>) the object belongs to (or itself); <c>null</c> if there is no district (Kyiv, Prypiat).</summary>
     public KatottgUnit? District { get; }
 
-    /// <summary>Громада (<c>H</c>), до якої належить об’єкт (або він сам); <c>null</c>, якщо громади немає.</summary>
+    /// <summary>Community (<c>H</c>) the object belongs to (or itself); <c>null</c> if there is no community.</summary>
     public KatottgUnit? Community { get; }
 
     /// <summary>
-    /// Населений пункт (<c>M</c>, <c>T</c>, <c>X</c>, <c>C</c>, <c>K</c>): сам об’єкт, а для району в місті — місто.
-    /// <c>null</c> для областей, районів і громад.
+    /// Populated place (<c>M</c>, <c>T</c>, <c>X</c>, <c>C</c>, <c>K</c>): the object itself, and for a city district, the city.
+    /// <c>null</c> for regions, districts, and communities.
     /// </summary>
     public KatottgUnit? PopulatedPlace { get; }
 
-    /// <summary>Район у місті (<c>B</c>): сам об’єкт, якщо це район у місті; інакше <c>null</c>.</summary>
+    /// <summary>City district (<c>B</c>): the object itself if it is a city district; otherwise <c>null</c>.</summary>
     public KatottgUnit? CityDistrict { get; }
 
-    /// <summary>Шлях від кореня (області) до самого об’єкта включно. Новий масив при кожному зверненні.</summary>
+    /// <summary>Path from the root (region) to the object itself, inclusive. A new array on every access.</summary>
     public IReadOnlyList<KatottgUnit> Path
     {
         get
@@ -78,8 +78,8 @@ public sealed class KatottgUnit
     }
 
     /// <summary>
-    /// Пласка адреса з кодами всіх рівнів: область, район, громада, населений пункт, район у місті.
-    /// Не посилається на набір даних, тож її зручно серіалізувати або повертати з API.
+    /// Flat address with the codes of all levels: region, district, community, populated place, city district.
+    /// It does not reference the dataset, so it is convenient to serialize or return from an API.
     /// </summary>
     public KatottgAddress ToAddress() => new()
     {
@@ -96,15 +96,15 @@ public sealed class KatottgUnit
     };
 
     /// <summary>
-    /// Коди АР Крим і Севастополя набирають чинності з моменту повернення цих територій під
-    /// юрисдикцію України (примітка до кодифікатора).
+    /// The codes of AR Crimea and Sevastopol take effect from the moment these territories return under
+    /// the jurisdiction of Ukraine (a note to the codifier).
     /// </summary>
     public bool IsTemporarilyNotInForce => Region.Code.Region is CrimeaRegion or SevastopolRegion;
 
     private const int CrimeaRegion = 1;
     private const int SevastopolRegion = 85;
 
-    /// <summary>Назва зі скороченням категорії: «с. Андріївка», «Бахчисарайський р-н», «Харківська обл.».</summary>
+    /// <summary>Name with the category abbreviation: "с. Андріївка", "Бахчисарайський р-н", "Харківська обл.".</summary>
     public string DisplayName
     {
         get
@@ -124,8 +124,8 @@ public sealed class KatottgUnit
     }
 
     /// <summary>
-    /// Повна адреса від об’єкта до кореня: «с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим».
-    /// Обчислюється при кожному зверненні.
+    /// Full address from the object up to the root: "с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим".
+    /// Computed on every access.
     /// </summary>
     public string FullName
     {
@@ -138,14 +138,14 @@ public sealed class KatottgUnit
         }
     }
 
-    /// <summary>Предки від батька до кореня.</summary>
+    /// <summary>Ancestors from the parent up to the root.</summary>
     public IEnumerable<KatottgUnit> Ancestors()
     {
         for (var unit = Parent; unit is not null; unit = unit.Parent)
             yield return unit;
     }
 
-    /// <summary>Усі нащадки, обхід у глибину в порядку файлу (без самого об’єкта).</summary>
+    /// <summary>All descendants, depth-first in file order (without the object itself).</summary>
     public IEnumerable<KatottgUnit> Descendants()
     {
         if (Children.Count == 0)
@@ -166,7 +166,7 @@ public sealed class KatottgUnit
         }
     }
 
-    /// <summary>Чи є цей об’єкт предком <paramref name="unit"/> (або ним самим).</summary>
+    /// <summary>Whether this object is an ancestor of <paramref name="unit"/> (or the same object).</summary>
     public bool Contains(KatottgUnit unit)
     {
         ArgumentNullException.ThrowIfNull(unit);

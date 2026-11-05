@@ -1,70 +1,70 @@
 namespace UkrUtils.Katottg.Import;
 
-/// <summary>Наскільки серйозна проблема, знайдена під час імпорту.</summary>
+/// <summary>How serious a problem found during import is.</summary>
 public enum ImportSeverity
 {
-    /// <summary>Інформація: дані виправлено автоматично (наприклад, обрізано пробіли).</summary>
+    /// <summary>Information: the data was fixed automatically (for example, whitespace was trimmed).</summary>
     Info,
 
-    /// <summary>Підозріле місце в даних; запис імпортовано.</summary>
+    /// <summary>A suspicious place in the data; the record was imported.</summary>
     Warning,
 
-    /// <summary>Запис не імпортовано або файл не вдалося розібрати.</summary>
+    /// <summary>The record was not imported or the file could not be parsed.</summary>
     Error,
 }
 
-/// <summary>Вид проблеми імпорту.</summary>
+/// <summary>Kind of import problem.</summary>
 public enum ImportIssueKind
 {
-    /// <summary>Не знайдено рядок шапки з колонками «Перший рівень» і «Назва об’єкта».</summary>
+    /// <summary>The header row with the columns "Перший рівень" (first level) and "Назва об’єкта" (object name) was not found.</summary>
     HeaderNotFound,
 
-    /// <summary>Службовий рядок (гриф, заголовок, примітка), пропущено.</summary>
+    /// <summary>Service row (classification stamp, title, note), skipped.</summary>
     SkippedRow,
 
-    /// <summary>Комірка рівня не є кодом <c>UA</c> + 17 цифр.</summary>
+    /// <summary>The level cell is not a <c>UA</c> + 17 digits code.</summary>
     InvalidCode,
 
-    /// <summary>Код уже зустрічався раніше.</summary>
+    /// <summary>The code has already occurred earlier.</summary>
     DuplicateCode,
 
-    /// <summary>12 значущих цифр коду вже зустрічалися в іншому коді.</summary>
+    /// <summary>The 12 significant digits of the code have already occurred in another code.</summary>
     DuplicateSignificantPart,
 
-    /// <summary>Батьківський код не з’явився раніше у файлі.</summary>
+    /// <summary>The parent code did not appear earlier in the file.</summary>
     MissingParent,
 
-    /// <summary>Ненульові сегменти коду батька не збігаються з кодом дитини.</summary>
+    /// <summary>The non-zero segments of the parent's code do not match the child's code.</summary>
     PrefixMismatch,
 
-    /// <summary>Невідома літера категорії.</summary>
+    /// <summary>Unknown category letter.</summary>
     UnknownCategory,
 
-    /// <summary>Категорія не очікувана під батьком такої категорії.</summary>
+    /// <summary>The category is not expected under a parent of this category.</summary>
     UnexpectedHierarchy,
 
-    /// <summary>Між заповненими рівнями є порожній.</summary>
+    /// <summary>There is an empty level between filled levels.</summary>
     LevelGap,
 
-    /// <summary>Порожня назва.</summary>
+    /// <summary>Empty name.</summary>
     EmptyName,
 
-    /// <summary>У кириличній назві є латинські літери (наприклад, «Вiйтовецька»).</summary>
+    /// <summary>A Cyrillic name contains Latin letters (for example, "Вiйтовецька").</summary>
     LatinCharactersInName,
 
-    /// <summary>Назва мала пробіли по краях; їх обрізано.</summary>
+    /// <summary>The name had surrounding whitespace; it was trimmed.</summary>
     NameHasSurroundingWhitespace,
 
-    /// <summary>Дату редакції не вдалося визначити ні з імені файлу, ні з властивостей документа.</summary>
+    /// <summary>The edition date could not be determined from either the file name or the document properties.</summary>
     EditionDateUnknown,
 }
 
-/// <summary>Одна проблема, знайдена під час імпорту.</summary>
-/// <param name="Severity">Серйозність.</param>
-/// <param name="Kind">Вид проблеми.</param>
-/// <param name="Row">Номер рядка в аркуші (з 1); 0 — проблема всього файлу.</param>
-/// <param name="Code">Код об’єкта, якщо відомий.</param>
-/// <param name="Message">Опис для людини.</param>
+/// <summary>One problem found during import.</summary>
+/// <param name="Severity">Severity.</param>
+/// <param name="Kind">Kind of problem.</param>
+/// <param name="Row">Row number in the sheet (from 1); 0 — a problem with the whole file.</param>
+/// <param name="Code">Object code, if known.</param>
+/// <param name="Message">Human-readable description.</param>
 public sealed record ImportIssue(ImportSeverity Severity, ImportIssueKind Kind, int Row, KatottgCode? Code, string Message)
 {
     /// <inheritdoc/>
@@ -73,7 +73,7 @@ public sealed record ImportIssue(ImportSeverity Severity, ImportIssueKind Kind, 
         : $"[{Severity}] row {Row} {Code}: {Kind}: {Message}";
 }
 
-/// <summary>Звіт про імпорт офіційного файлу.</summary>
+/// <summary>Report on the import of the official file.</summary>
 public sealed class ImportReport
 {
     internal ImportReport(IReadOnlyList<ImportIssue> issues, int headerRow, int dataRows, int skippedRows, int emptyRows, IReadOnlyList<string> notes)
@@ -86,30 +86,30 @@ public sealed class ImportReport
         Notes = notes;
     }
 
-    /// <summary>Усі знайдені проблеми в порядку рядків.</summary>
+    /// <summary>All problems found, in row order.</summary>
     public IReadOnlyList<ImportIssue> Issues { get; }
 
-    /// <summary>Номер рядка шапки (з 1); 0, якщо шапку не знайдено.</summary>
+    /// <summary>Header row number (from 1); 0 if the header was not found.</summary>
     public int HeaderRow { get; }
 
-    /// <summary>Кількість імпортованих записів.</summary>
+    /// <summary>Number of imported records.</summary>
     public int DataRows { get; }
 
-    /// <summary>Кількість непорожніх службових рядків (гриф, заголовок, примітка).</summary>
+    /// <summary>Number of non-empty service rows (classification stamp, title, note).</summary>
     public int SkippedRows { get; }
 
-    /// <summary>Кількість порожніх рядків, записаних в аркуші.</summary>
+    /// <summary>Number of empty rows recorded in the sheet.</summary>
     public int EmptyRows { get; }
 
-    /// <summary>Тексти приміток після даних (рядки, що починаються з «Примітка»).</summary>
+    /// <summary>Texts of the notes after the data (rows starting with "Примітка", i.e. "Note").</summary>
     public IReadOnlyList<string> Notes { get; }
 
-    /// <summary>Чи є хоч одна помилка.</summary>
+    /// <summary>Whether there is at least one error.</summary>
     public bool HasErrors => Issues.Any(i => i.Severity == ImportSeverity.Error);
 
-    /// <summary>Лише помилки.</summary>
+    /// <summary>Errors only.</summary>
     public IEnumerable<ImportIssue> Errors => Issues.Where(i => i.Severity == ImportSeverity.Error);
 
-    /// <summary>Лише попередження.</summary>
+    /// <summary>Warnings only.</summary>
     public IEnumerable<ImportIssue> Warnings => Issues.Where(i => i.Severity == ImportSeverity.Warning);
 }

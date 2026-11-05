@@ -2,7 +2,7 @@ using UkrUtils.Katottg.Import;
 
 namespace UkrUtils.Katottg.Tool;
 
-/// <summary>Команди CLI <c>katottg</c>. Повертає код виходу: 0 — успіх, 1 — помилка, 2 — неправильні аргументи.</summary>
+/// <summary>Commands of the <c>katottg</c> CLI. Returns the exit code: 0 — success, 1 — error, 2 — invalid arguments.</summary>
 internal static class KatottgCli
 {
     private const string Usage = """

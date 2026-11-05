@@ -1,16 +1,16 @@
 namespace UkrUtils.Katottg.Import;
 
-/// <summary>Параметри імпорту.</summary>
+/// <summary>Import options.</summary>
 public sealed class KatottgImportOptions
 {
-    /// <summary>Дата редакції. Якщо не задано — з імені файлу (<c>katottg-YY-MM-DD</c>), потім з <c>docProps/core.xml</c>.</summary>
+    /// <summary>Edition date. If not set, taken from the file name (<c>katottg-YY-MM-DD</c>), then from <c>docProps/core.xml</c>.</summary>
     public DateOnly? EditionDate { get; init; }
 
-    /// <summary>Джерело для <see cref="KatottgEdition.Source"/>. Якщо не задано — ім’я файлу.</summary>
+    /// <summary>Source for <see cref="KatottgEdition.Source"/>. If not set, the file name.</summary>
     public string? Source { get; init; }
 }
 
-/// <summary>Результат імпорту: записи у порядку файлу, редакція і звіт.</summary>
+/// <summary>Import result: records in file order, the edition, and the report.</summary>
 public sealed class KatottgImportResult
 {
     internal KatottgImportResult(KatottgEdition edition, IReadOnlyList<KatottgRecord> records, ImportReport report)
@@ -20,18 +20,18 @@ public sealed class KatottgImportResult
         Report = report;
     }
 
-    /// <summary>Відомості про редакцію.</summary>
+    /// <summary>Information about the edition.</summary>
     public KatottgEdition Edition { get; }
 
-    /// <summary>Імпортовані записи в порядку файлу (батьки раніше за дітей). Рядки з помилками сюди не потрапляють.</summary>
+    /// <summary>Imported records in file order (parents before children). Rows with errors are not included.</summary>
     public IReadOnlyList<KatottgRecord> Records { get; }
 
-    /// <summary>Звіт про імпорт.</summary>
+    /// <summary>Import report.</summary>
     public ImportReport Report { get; }
 
     /// <summary>
-    /// Будує <see cref="KatottgDataset"/> з імпортованих записів. Перед цим перевірте
-    /// <see cref="ImportReport.HasErrors"/>: рядки з помилками в набір не потрапляють.
+    /// Builds a <see cref="KatottgDataset"/> from the imported records. Check
+    /// <see cref="ImportReport.HasErrors"/> first: rows with errors are not included in the dataset.
     /// </summary>
     public KatottgDataset CreateDataset() => KatottgDataset.Create(Edition, Records);
 }

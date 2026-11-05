@@ -138,3 +138,12 @@ jobs:
             --notes "$notes" \
             --generate-notes \
             ${{ needs.build.outputs.prerelease }}
+
+  # Сайт оновлюється після кожного релізу; при dry-run job пропускається разом з publish.
+  pages:
+    needs: publish
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

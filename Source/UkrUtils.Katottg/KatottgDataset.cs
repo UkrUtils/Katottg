@@ -4,22 +4,22 @@ using System.Diagnostics.CodeAnalysis;
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Незмінний набір даних кодифікатора: усі об’єкти, ієрархія та індекси пошуку.
-/// Безпечний для одночасного читання з багатьох потоків. Почніть з <see cref="Embedded"/>.
+/// Immutable codifier dataset: all objects, the hierarchy, and the search indexes.
+/// Safe for concurrent reads from many threads. Start with <see cref="Embedded"/>.
 /// </summary>
 /// <remarks>
-/// Головні правила роботи з КАТОТТГ:
+/// Main rules for working with KATOTTG:
 /// <list type="bullet">
-/// <item>Ключ — <see cref="KatottgCode"/>, ніколи не назва: назви повторюються навіть в одній громаді.
-/// Людині показуйте <see cref="KatottgUnit.DisplayName"/> або <see cref="KatottgUnit.FullName"/>.</item>
-/// <item>У БД зберігайте лише код найнижчого рівня; батьки — з <see cref="Find"/> або
-/// <see cref="KatottgUnit.ToAddress"/>, у SQL — за <see cref="KatottgCode.HierarchyPrefix"/>.</item>
-/// <item>Адресу з довільного тексту передавайте в <see cref="Search(string, KatottgSearchOptions?)"/>
-/// як є; не розбирайте її самостійно.</item>
-/// <item>Рівні ієрархії можуть бути відсутні (Київ, Севастополь, Прип’ять): перевіряйте <c>null</c>.</item>
+/// <item>The key is the <see cref="KatottgCode"/>, never the name: names repeat even within one community.
+/// When showing a unit to a person, use <see cref="KatottgUnit.DisplayName"/> or <see cref="KatottgUnit.FullName"/>.</item>
+/// <item>In a database store only the lowest-level code; get the parents from <see cref="Find"/> or
+/// <see cref="KatottgUnit.ToAddress"/>, and in SQL filter by <see cref="KatottgCode.HierarchyPrefix"/>.</item>
+/// <item>Pass a free-text address to <see cref="Search(string, KatottgSearchOptions?)"/>
+/// as is; do not parse it yourself.</item>
+/// <item>Hierarchy levels may be missing (Kyiv, Sevastopol, Prypiat): check for <c>null</c>.</item>
 /// </list>
-/// Посібник для AI-агентів: <c>AgentGuide.md</c> у корені пакета або
-/// https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
+/// Guide for AI agents: <c>AgentGuide.md</c> in the package root or
+/// https://github.com/UkrUtils/Katottg/blob/main/Docs/en/AgentGuide.md
 /// </remarks>
 public sealed partial class KatottgDataset
 {
@@ -39,41 +39,41 @@ public sealed partial class KatottgDataset
         _byCategory = units.GroupBy(u => u.Category).ToDictionary(g => g.Key, g => g.ToArray().AsReadOnly());
     }
 
-    /// <summary>Відомості про редакцію кодифікатора.</summary>
+    /// <summary>Information about the codifier edition.</summary>
     public KatottgEdition Edition { get; }
 
-    /// <summary>Кількість об’єктів.</summary>
+    /// <summary>Number of objects.</summary>
     public int Count => _units.Length;
 
-    /// <summary>Корені: області, АР Крим і міста зі спеціальним статусом.</summary>
+    /// <summary>Roots: regions, AR Crimea, and cities with special status.</summary>
     public IReadOnlyList<KatottgUnit> Regions { get; }
 
-    /// <summary>Усі об’єкти в порядку офіційного файлу (батьки раніше за дітей).</summary>
+    /// <summary>All objects in the order of the official file (parents before children).</summary>
     public IReadOnlyList<KatottgUnit> All { get; }
 
-    /// <summary>Об’єкт з точно таким кодом.</summary>
+    /// <summary>The object with exactly this code.</summary>
     public KatottgUnit? Find(KatottgCode code) => _byCode.TryGetValue(code.Value, out var i) ? _units[i] : null;
 
-    /// <summary>Об’єкт, у якого 12 значущих цифр збігаються з <paramref name="code"/>; хвіст ігнорується.</summary>
+    /// <summary>The object whose 12 significant digits match <paramref name="code"/>; the tail is ignored.</summary>
     public KatottgUnit? FindBySignificantPart(KatottgCode code)
         => _bySignificantPart.TryGetValue(code.SignificantPart, out var i) ? _units[i] : null;
 
-    /// <summary>Розбирає код і шукає об’єкт з точно таким кодом.</summary>
+    /// <summary>Parses a code and looks up the object with exactly this code.</summary>
     public bool TryFind(ReadOnlySpan<char> code, [NotNullWhen(true)] out KatottgUnit? unit)
     {
         unit = KatottgCode.TryParse(code, out var parsed) ? Find(parsed) : null;
         return unit is not null;
     }
 
-    /// <summary>Об’єкти заданої категорії в порядку файлу.</summary>
+    /// <summary>Objects of the given category in file order.</summary>
     public IReadOnlyList<KatottgUnit> GetByCategory(KatottgCategory category)
         => _byCategory.TryGetValue(category, out var list) ? list : ReadOnlyCollection<KatottgUnit>.Empty;
 
     /// <summary>
-    /// Будує набір із пласких записів. Батько кожного запису має йти раніше за нього.
+    /// Builds a dataset from flat records. The parent of each record must come before it.
     /// </summary>
     /// <exception cref="ArgumentException">
-    /// Дублікат коду або 12 значущих цифр, батька немає серед попередніх записів, порожня назва.
+    /// Duplicate code or 12 significant digits, the parent is not among the preceding records, or an empty name.
     /// </exception>
     public static KatottgDataset Create(KatottgEdition edition, IEnumerable<KatottgRecord> records)
     {
@@ -128,7 +128,7 @@ public sealed partial class KatottgDataset
         return new KatottgDataset(edition, units, byCode, bySignificant);
     }
 
-    /// <summary>Плаский список записів у порядку <see cref="All"/>.</summary>
+    /// <summary>Flat list of records in the <see cref="All"/> order.</summary>
     public IEnumerable<KatottgRecord> ToRecords()
         => _units.Select(u => new KatottgRecord(u.Code, u.Parent?.Code, u.Category, u.Name));
 }

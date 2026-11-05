@@ -6,16 +6,16 @@ using UkrUtils.Katottg.Import.Xlsx;
 namespace UkrUtils.Katottg.Import;
 
 /// <summary>
-/// Розбирає офіційний xlsx-файл кодифікатора (аркуш із колонками рівнів, категорії й назви).
+/// Parses the official codifier xlsx file (a sheet with level, category, and name columns).
 /// </summary>
 /// <remarks>
-/// Шапку шукає за текстом, колонки визначає за шапкою. Рядок даних — той, де в колонці першого
-/// рівня стоїть код. Код об’єкта — останній заповнений рівень, батько — останній відмінний від
-/// нього код ліворуч (так обробляються повтори кодів у Києві, Севастополі, Прип’яті).
+/// It finds the header by its text and determines the columns from the header. A data row is one where the first-level
+/// column holds a code. The object's code is the last filled level, and the parent is the last code to its left that differs
+/// from it (this is how repeated codes in Kyiv, Sevastopol, and Prypiat are handled).
 /// </remarks>
 public static partial class KatottgSheetParser
 {
-    /// <summary>Розбирає файл за шляхом. Дату редакції бере з імені файлу.</summary>
+    /// <summary>Parses a file by path. Takes the edition date from the file name.</summary>
     public static KatottgImportResult Parse(string path, KatottgImportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -23,11 +23,11 @@ public static partial class KatottgSheetParser
         return Parse(stream, path, options);
     }
 
-    /// <summary>Розбирає xlsx із потоку.</summary>
-    /// <param name="xlsx">Вміст файлу. Читається повністю, щоб порахувати SHA-256.</param>
-    /// <param name="fileName">Ім’я або шлях файлу — для дати редакції та <see cref="KatottgEdition.Source"/>.</param>
-    /// <param name="options">Параметри імпорту.</param>
-    /// <exception cref="InvalidDataException">Потік не є коректним xlsx.</exception>
+    /// <summary>Parses an xlsx from a stream.</summary>
+    /// <param name="xlsx">File contents. Read fully in order to compute the SHA-256.</param>
+    /// <param name="fileName">File name or path — for the edition date and <see cref="KatottgEdition.Source"/>.</param>
+    /// <param name="options">Import options.</param>
+    /// <exception cref="InvalidDataException">The stream is not a valid xlsx.</exception>
     public static KatottgImportResult Parse(Stream xlsx, string? fileName = null, KatottgImportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(xlsx);
@@ -312,7 +312,7 @@ public static partial class KatottgSheetParser
             => Issues.Add(new ImportIssue(ImportSeverity.Warning, kind, row.Number, code, message));
     }
 
-    /// <summary>Усі ненульові сегменти батька збігаються з відповідними сегментами дитини.</summary>
+    /// <summary>All non-zero segments of the parent match the corresponding segments of the child.</summary>
     internal static bool IsPrefixConsistent(KatottgCode parent, KatottgCode child)
         => Matches(parent.Region, child.Region) && Matches(parent.District, child.District) &&
            Matches(parent.Community, child.Community) && Matches(parent.Settlement, child.Settlement) &&
@@ -320,7 +320,7 @@ public static partial class KatottgSheetParser
 
     private static bool Matches(int parentSegment, int childSegment) => parentSegment == 0 || parentSegment == childSegment;
 
-    /// <summary>Допустимі пари «батько → дитина», включно з відомими винятками (Прип’ять, райони у містах).</summary>
+    /// <summary>Allowed "parent → child" pairs, including the known exceptions (Prypiat, city districts).</summary>
     internal static bool IsExpectedChild(KatottgCategory parent, KatottgCategory child) => (parent, child) switch
     {
         (KatottgCategory.Region, KatottgCategory.District or KatottgCategory.City) => true,

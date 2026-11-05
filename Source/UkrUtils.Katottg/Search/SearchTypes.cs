@@ -1,28 +1,28 @@
 namespace UkrUtils.Katottg;
 
-/// <summary>Як саме назва збіглася із запитом. Чим менше значення, тим кращий збіг.</summary>
+/// <summary>How exactly the name matched the query. The smaller the value, the better the match.</summary>
 public enum MatchKind
 {
-    /// <summary>Запит — це код КАТОТТГ (можливо, з неправильним хвостом).</summary>
+    /// <summary>The query is a KATOTTG code (possibly with a wrong tail).</summary>
     Code,
 
-    /// <summary>Нормалізована назва дорівнює запиту.</summary>
+    /// <summary>The normalized name equals the query.</summary>
     Exact,
 
-    /// <summary>Назва починається із запиту.</summary>
+    /// <summary>The name starts with the query.</summary>
     Prefix,
 
-    /// <summary>Одне зі слів назви (не перше) починається із запиту: «Подільський» → «Могилів-Подільський».</summary>
+    /// <summary>One of the name's words (not the first) starts with the query: "Подільський" → "Могилів-Подільський".</summary>
     WordPrefix,
 }
 
-/// <summary>Знайдений об’єкт.</summary>
-/// <param name="Unit">Об’єкт кодифікатора.</param>
-/// <param name="Score">Оцінка; більша — краща. Порівнювати варто лише в межах одного пошуку.</param>
-/// <param name="Kind">Вид збігу.</param>
+/// <summary>A found object.</summary>
+/// <param name="Unit">Codifier object.</param>
+/// <param name="Score">Score; higher is better. Worth comparing only within a single search.</param>
+/// <param name="Kind">Match kind.</param>
 public sealed record KatottgSearchHit(KatottgUnit Unit, double Score, MatchKind Kind);
 
-/// <summary>Результат пошуку за вільним рядком.</summary>
+/// <summary>Result of a free-text search.</summary>
 public sealed class KatottgSearchResult
 {
     internal KatottgSearchResult(string text, IReadOnlyList<KatottgSearchHit> hits)
@@ -31,56 +31,56 @@ public sealed class KatottgSearchResult
         Hits = hits;
     }
 
-    /// <summary>Рядок запиту.</summary>
+    /// <summary>The query string.</summary>
     public string Text { get; }
 
-    /// <summary>Знайдені об’єкти від кращого до гіршого.</summary>
+    /// <summary>Found objects from best to worst.</summary>
     public IReadOnlyList<KatottgSearchHit> Hits { get; }
 
-    /// <summary>Найкращий збіг або <c>null</c>.</summary>
+    /// <summary>The best match or <c>null</c>.</summary>
     public KatottgSearchHit? Best => Hits.Count > 0 ? Hits[0] : null;
 
     /// <summary>
-    /// Результати у вигляді дерева: знайдені об’єкти (<see cref="KatottgTreeNode.IsMatch"/>) разом
-    /// з областями, районами й громадами, у яких вони лежать.
+    /// Results as a tree: the found objects (<see cref="KatottgTreeNode.IsMatch"/>) together
+    /// with the regions, districts, and communities they lie in.
     /// </summary>
     public IReadOnlyList<KatottgTreeNode> ToTree() => KatottgTreeNode.Build(Hits.Select(h => h.Unit));
 }
 
-/// <summary>Параметри пошуку за вільним рядком.</summary>
+/// <summary>Options for a free-text search.</summary>
 public sealed class KatottgSearchOptions
 {
-    /// <summary>Найбільша кількість результатів. За замовчуванням 20.</summary>
+    /// <summary>Maximum number of results. 20 by default.</summary>
     public int Limit { get; init; } = 20;
 
-    /// <summary>Шукати лише серед цих категорій. Поєднується з маркерами в запиті («с.», «м.»…).</summary>
+    /// <summary>Search only among these categories. Combined with markers in the query ("с.", "м."…).</summary>
     public IReadOnlyCollection<KatottgCategory>? Categories { get; init; }
 
-    /// <summary>Шукати лише всередині цього об’єкта (включно з ним самим).</summary>
+    /// <summary>Search only inside this object (including the object itself).</summary>
     public KatottgUnit? Within { get; init; }
 }
 
-/// <summary>Структурований запит: назва плюс необов’язковий контекст.</summary>
+/// <summary>Structured query: a name plus optional context.</summary>
 public sealed class KatottgQuery
 {
-    /// <summary>Назва об’єкта. Може містити маркер категорії: «с. Андріївка».</summary>
+    /// <summary>Object name. May contain a category marker: "с. Андріївка".</summary>
     public required string Name { get; init; }
 
-    /// <summary>Назва області (або міста зі спецстатусом), у якій шукати.</summary>
+    /// <summary>Name of the region (or city with special status) to search in.</summary>
     public string? Region { get; init; }
 
-    /// <summary>Назва району, у якому шукати.</summary>
+    /// <summary>Name of the district to search in.</summary>
     public string? District { get; init; }
 
-    /// <summary>Назва громади, у якій шукати.</summary>
+    /// <summary>Name of the community to search in.</summary>
     public string? Community { get; init; }
 
-    /// <summary>Шукати лише серед цих категорій.</summary>
+    /// <summary>Search only among these categories.</summary>
     public IReadOnlyCollection<KatottgCategory>? Categories { get; init; }
 
-    /// <summary>Шукати лише всередині цього об’єкта (включно з ним самим).</summary>
+    /// <summary>Search only inside this object (including the object itself).</summary>
     public KatottgUnit? Within { get; init; }
 
-    /// <summary>Найбільша кількість результатів. За замовчуванням 20.</summary>
+    /// <summary>Maximum number of results. 20 by default.</summary>
     public int Limit { get; init; } = 20;
 }

@@ -9,13 +9,13 @@ public sealed partial class KatottgDataset
     private static readonly Lazy<KatottgDataset> s_embedded = new(LoadEmbedded, LazyThreadSafetyMode.ExecutionAndPublication);
 
     /// <summary>
-    /// Набір даних із вбудованого в пакет знімка. Завантажується ліниво при першому зверненні,
-    /// далі повертається той самий екземпляр. Мережа не потрібна.
+    /// Dataset from the snapshot embedded in the package. Loaded lazily on first access,
+    /// after which the same instance is returned. No network is required.
     /// </summary>
     public static KatottgDataset Embedded => s_embedded.Value;
 
-    /// <summary>Завантажує бінарний знімок (стиснутий gzip або ні — визначається автоматично).</summary>
-    /// <exception cref="InvalidDataException">Потік не є коректним знімком.</exception>
+    /// <summary>Loads a binary snapshot (gzip-compressed or not; detected automatically).</summary>
+    /// <exception cref="InvalidDataException">The stream is not a valid snapshot.</exception>
     public static KatottgDataset Load(Stream snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -23,8 +23,8 @@ public sealed partial class KatottgDataset
     }
 
     /// <summary>
-    /// Записує набір у бінарний знімок, стиснутий gzip. Вивід детермінований: однаковий набір
-    /// дає однакові байти.
+    /// Writes the dataset to a binary snapshot compressed with gzip. The output is deterministic: the same dataset
+    /// yields the same bytes.
     /// </summary>
     public void Save(Stream destination)
     {

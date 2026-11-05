@@ -1,9 +1,9 @@
 namespace UkrUtils.Katottg;
 
-/// <summary>Відомості про редакцію кодифікатора, з якої побудовано набір даних.</summary>
-/// <param name="Date">Дата редакції.</param>
-/// <param name="Source">Джерело: зазвичай ім’я офіційного файлу (наприклад, <c>katottg-26-11-03.xlsx</c>).</param>
-/// <param name="Sha256">SHA-256 вихідного файлу, 64 шістнадцяткові цифри в нижньому регістрі; <c>null</c>, якщо невідомо.</param>
+/// <summary>Information about the codifier edition the dataset was built from.</summary>
+/// <param name="Date">Edition date.</param>
+/// <param name="Source">Source: usually the name of the official file (for example, <c>katottg-26-11-03.xlsx</c>).</param>
+/// <param name="Sha256">SHA-256 of the source file, 64 lowercase hexadecimal digits; <c>null</c> if unknown.</param>
 public sealed record KatottgEdition(DateOnly Date, string? Source, string? Sha256)
 {
     /// <inheritdoc/>

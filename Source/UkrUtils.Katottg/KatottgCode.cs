@@ -4,31 +4,31 @@ using System.Runtime.CompilerServices;
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Код КАТОТТГ: <c>UA</c> + 17 цифр, наприклад <c>UA01020030010043419</c>.
+/// KATOTTG code: <c>UA</c> + 17 digits, for example <c>UA01020030010043419</c>.
 /// </summary>
 /// <remarks>
-/// Структура цифр: <c>RR DD CCC SSS BB TTTTT</c> — область, район, громада, населений пункт,
-/// район у місті та 5-значний службовий хвіст. Перші 12 цифр (<see cref="SignificantPart"/>)
-/// унікальні для кожного об’єкта; хвіст з ієрархії не виводиться.
-/// Значення <c>default</c> — це <c>UA00000000000000000</c>, такого коду в кодифікаторі немає.
+/// Digit structure: <c>RR DD CCC SSS BB TTTTT</c> — region, district, community, populated place,
+/// city district, and a 5-digit service tail. The first 12 digits (<see cref="SignificantPart"/>)
+/// are unique for every object; the tail is not derived from the hierarchy.
+/// The <c>default</c> value is <c>UA00000000000000000</c>; such a code does not exist in the codifier.
 /// <para>
-/// Код унікальний у межах редакції, тож для зберігання в БД досить одного поля з кодом
-/// найнижчого рівня (<c>char(19)</c> через <see cref="ToString()"/> або <c>bigint</c> через
-/// <see cref="Value"/>). Не обчислюйте повний код батька з коду дитини: хвоста батька там немає —
-/// використовуйте <see cref="KatottgUnit.Parent"/> або <see cref="HierarchyPrefix"/>.
+/// The code is unique within an edition, so storing it in a database needs just one field with the code of the
+/// lowest level (<c>char(19)</c> via <see cref="ToString()"/> or <c>bigint</c> via
+/// <see cref="Value"/>). Do not compute a parent's full code from a child's code: the parent's tail is not there;
+/// use <see cref="KatottgUnit.Parent"/> or <see cref="HierarchyPrefix"/>.
 /// </para>
 /// </remarks>
 public readonly struct KatottgCode
     : IEquatable<KatottgCode>, IComparable<KatottgCode>, IComparable,
       ISpanParsable<KatottgCode>, ISpanFormattable, IUtf8SpanFormattable
 {
-    /// <summary>Довжина текстового подання: <c>UA</c> + 17 цифр.</summary>
+    /// <summary>Length of the text form: <c>UA</c> + 17 digits.</summary>
     public const int Length = 19;
 
-    /// <summary>Кількість цифр у коді.</summary>
+    /// <summary>Number of digits in the code.</summary>
     public const int DigitCount = 17;
 
-    /// <summary>Найбільше допустиме числове значення (17 дев’яток).</summary>
+    /// <summary>Largest allowed numeric value (seventeen nines).</summary>
     public const ulong MaxValue = 99_999_999_999_999_999UL;
 
     private const ulong TailModulus = 100_000UL;
@@ -37,42 +37,42 @@ public readonly struct KatottgCode
 
     private KatottgCode(ulong value) => _value = value;
 
-    /// <summary>Створює код з його 17 цифр, поданих як число.</summary>
-    /// <exception cref="ArgumentOutOfRangeException">Значення має більше ніж 17 цифр.</exception>
+    /// <summary>Creates a code from its 17 digits given as a number.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value has more than 17 digits.</exception>
     public static KatottgCode FromValue(ulong value)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxValue);
         return new KatottgCode(value);
     }
 
-    /// <summary>17 цифр коду як число.</summary>
+    /// <summary>The 17 digits of the code as a number.</summary>
     public ulong Value => _value;
 
-    /// <summary>Область або місто зі спеціальним статусом (цифри 1–2).</summary>
+    /// <summary>Region or city with special status (digits 1–2).</summary>
     public byte Region => (byte)(_value / 1_000_000_000_000_000UL % 100);
 
-    /// <summary>Район в області (цифри 3–4).</summary>
+    /// <summary>District within a region (digits 3–4).</summary>
     public byte District => (byte)(_value / 10_000_000_000_000UL % 100);
 
-    /// <summary>Громада в районі (цифри 5–7).</summary>
+    /// <summary>Community within a district (digits 5–7).</summary>
     public ushort Community => (ushort)(_value / 10_000_000_000UL % 1000);
 
-    /// <summary>Населений пункт у громаді (цифри 8–10).</summary>
+    /// <summary>Populated place within a community (digits 8–10).</summary>
     public ushort Settlement => (ushort)(_value / 10_000_000UL % 1000);
 
-    /// <summary>Район у місті (цифри 11–12).</summary>
+    /// <summary>City district (digits 11–12).</summary>
     public byte CityDistrict => (byte)(_value / TailModulus % 100);
 
-    /// <summary>Службовий 5-значний хвіст (цифри 13–17).</summary>
+    /// <summary>5-digit service tail (digits 13–17).</summary>
     public uint Tail => (uint)(_value % TailModulus);
 
-    /// <summary>12 значущих цифр без хвоста. Унікальні для кожного об’єкта кодифікатора.</summary>
+    /// <summary>12 significant digits without the tail. Unique for every codifier object.</summary>
     public ulong SignificantPart => _value / TailModulus;
 
     /// <summary>
-    /// Префікс батьківського об’єкта: найнижчий ненульовий сегмент обнулено, хвіст дорівнює нулю.
-    /// Це <b>лише префікс</b> — повний код батька (з хвостом) з коду дитини не обчислити;
-    /// шукайте батька через <c>FindBySignificantPart</c>. <c>null</c> для кореневих кодів.
+    /// Prefix of the parent object: the lowest non-zero segment is zeroed and the tail is zero.
+    /// This is <b>only a prefix</b> — the parent's full code (with the tail) cannot be computed from a child's code;
+    /// look the parent up via <c>FindBySignificantPart</c>. <c>null</c> for root codes.
     /// </summary>
     public KatottgCode? ParentPrefix
     {
@@ -95,7 +95,7 @@ public readonly struct KatottgCode
         }
     }
 
-    /// <summary>Кількість значущих цифр до кінця найнижчого ненульового сегмента (0, 2, 4, 7, 10 або 12).</summary>
+    /// <summary>Number of significant digits up to the end of the lowest non-zero segment (0, 2, 4, 7, 10, or 12).</summary>
     private int HierarchyDigits
     {
         get
@@ -110,13 +110,13 @@ public readonly struct KatottgCode
     }
 
     /// <summary>
-    /// Текстовий префікс, з якого починаються коди цього об’єкта і всіх його нащадків:
-    /// <c>UA0102</c> для району, <c>UA0102001</c> для громади. Зручно для SQL:
-    /// <c>WHERE code LIKE 'UA0102%'</c> — сам район і все, що в ньому.
+    /// Text prefix that the codes of this object and all its descendants start with:
+    /// <c>UA0102</c> for a district, <c>UA0102001</c> for a community. Handy for SQL:
+    /// <c>WHERE code LIKE 'UA0102%'</c> — the district itself and everything in it.
     /// </summary>
     /// <remarks>
-    /// Інваріант перевірено на всіх записах офіційного файлу: префікс вибирає рівно піддерево
-    /// об’єкта, включно з нетиповими місцями (Київ, Севастополь, Прип’ять).
+    /// The invariant is verified on all records of the official file: the prefix selects exactly the object's
+    /// subtree, including the atypical cases (Kyiv, Sevastopol, Prypiat).
     /// </remarks>
     public string HierarchyPrefix
     {
@@ -130,8 +130,8 @@ public readonly struct KatottgCode
     }
 
     /// <summary>
-    /// Чи лежить цей об’єкт усередині <paramref name="ancestor"/> (строго: сам об’єкт — ні).
-    /// Перевіряє лише цифри коду, без набору даних: код починається з <see cref="HierarchyPrefix"/> предка.
+    /// Whether this object lies inside <paramref name="ancestor"/> (strictly: the object itself does not count).
+    /// Checks only the code digits, without a dataset: the code starts with the ancestor's <see cref="HierarchyPrefix"/>.
     /// </summary>
     public bool IsDescendantOf(KatottgCode ancestor)
     {
@@ -153,10 +153,10 @@ public readonly struct KatottgCode
     #region Parsing
 
     /// <summary>
-    /// Розбирає код. Приймає <c>UA</c> у будь-якому регістрі (також кириличне <c>УА</c>)
-    /// і пробіли по краях.
+    /// Parses a code. Accepts <c>UA</c> in any case (including the Cyrillic <c>УА</c>)
+    /// and surrounding whitespace.
     /// </summary>
-    /// <exception cref="FormatException">Рядок не є кодом КАТОТТГ.</exception>
+    /// <exception cref="FormatException">The string is not a KATOTTG code.</exception>
     public static KatottgCode Parse(string s)
     {
         ArgumentNullException.ThrowIfNull(s);
@@ -173,7 +173,7 @@ public readonly struct KatottgCode
     /// <inheritdoc cref="Parse(string)"/>
     public static KatottgCode Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => Parse(s);
 
-    /// <summary>Пробує розібрати код; див. <see cref="Parse(string)"/>.</summary>
+    /// <summary>Tries to parse a code; see <see cref="Parse(string)"/>.</summary>
     public static bool TryParse([NotNullWhen(true)] string? s, out KatottgCode result)
     {
         if (s is null)
@@ -184,7 +184,7 @@ public readonly struct KatottgCode
         return TryParse(s.AsSpan(), out result);
     }
 
-    /// <summary>Пробує розібрати код; див. <see cref="Parse(string)"/>.</summary>
+    /// <summary>Tries to parse a code; see <see cref="Parse(string)"/>.</summary>
     public static bool TryParse(ReadOnlySpan<char> s, out KatottgCode result)
     {
         result = default;
@@ -220,10 +220,10 @@ public readonly struct KatottgCode
 
     #region Formatting
 
-    /// <summary>Канонічне подання: <c>UA</c> + 17 цифр.</summary>
+    /// <summary>Canonical form: <c>UA</c> + 17 digits.</summary>
     public override string ToString() => string.Create(Length, _value, static (span, value) => WriteChars(span, value));
 
-    /// <summary>Підтримується лише формат за замовчуванням (<c>null</c>, <c>""</c> або <c>"G"</c>).</summary>
+    /// <summary>Only the default format is supported (<c>null</c>, <c>""</c> or <c>"G"</c>).</summary>
     public string ToString(string? format, IFormatProvider? formatProvider)
     {
         ValidateFormat(format);
