@@ -1,7 +1,12 @@
 import { defineConfig } from 'vitepress'
-import { REPO } from './site.config.js'
+import { REPO, PAYPAL_BUTTON_ID } from './site.config.js'
+import { donateUrl } from './lib/donate.js'
 
 const GITHUB = `https://github.com/${REPO}`
+
+if (donateUrl(PAYPAL_BUTTON_ID) === null) {
+  console.warn('[site] PAYPAL_BUTTON_ID не задано — кнопку донату приховано')
+}
 
 // VitePress серіалізує функцію editLink.pattern у клієнтський бандл, тому вона має бути
 // самодостатньою: жодних посилань на змінні модуля (вони там undefined).
@@ -26,8 +31,6 @@ const nav = (prefix: string, labels: string[]) => [
 export default defineConfig({
   base: '/Katottg/',
   cleanUrls: true,
-  // Тимчасово: сторінок guide/agents/releases/donate ще немає (Task 5 прибере це).
-  ignoreDeadLinks: [/^\/(en\/)?(guide|agents|releases|donate)$/],
   themeConfig: {
     socialLinks: [{ icon: 'github', link: GITHUB }],
     search: {

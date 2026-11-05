@@ -7,4 +7,4 @@ export const REPO = 'UkrUtils/Katottg'
 export const PACKAGE_IDS = ['UkrUtils.Katottg', 'UkrUtils.Katottg.Import', 'UkrUtils.Katottg.Tool']
 
 /** Ідентифікатор кнопки PayPal (порожній, поки кнопку не створено). */
-export const PAYPAL_BUTTON_ID = ''
+export const PAYPAL_BUTTON_ID = 'JGASTH7B3Z2EC'
