@@ -1,0 +1,15 @@
+{
+  "name": "site",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
