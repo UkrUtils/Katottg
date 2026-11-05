@@ -18,7 +18,7 @@
 dotnet add package UkrUtils.Katottg
 ```
 
-Для AI-агентів є окремий стислий посібник: [Docs/AgentGuide.md](Docs/AgentGuide.md).
+Для AI-агентів є окремий стислий посібник: [Docs/AgentGuide.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md).
 
 ---
 
@@ -256,14 +256,36 @@ katottg build-snapshot OfficialData -o Source/UkrUtils.Katottg/Data/katottg.bin.
 (~26 мс). Типові часи: `Find` ~4 нс; точний пошук ~1 мкс; префікс ~4 мкс; адреса з трьох частин
 ~16 мкс. Бенчмарки лежать у `Tests/UkrUtils.Katottg.Benchmarks`.
 
+## AI-агенти у вашому проєкті
+
+Агенти (Claude Code, Copilot, Cursor, Codex…) читають `AGENTS.md` / `CLAUDE.md` **вашого**
+репозиторію, але не документацію всередині NuGet-пакетів. Щоб агент правильно працював із КАТОТТГ,
+додайте у свій `AGENTS.md`:
+
+```markdown
+## КАТОТТГ (UkrUtils.Katottg)
+
+Для кодів адміністративно-територіальних одиниць України використовуй NuGet-пакет UkrUtils.Katottg.
+Перед тим як писати код із ним, прочитай посібник для агентів:
+- локально: ~/.nuget/packages/ukrutils.katottg/<версія>/AgentGuide.md (версія — з .csproj);
+- онлайн: https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
+
+Головне: ключ — код (UA + 17 цифр), а не назва; у БД зберігай лише код найнижчого рівня;
+адреси з тексту передавай у KatottgDataset.Embedded.Search(...); рівні ієрархії можуть бути null.
+```
+
+Посібник лежить у корені кожного пакета (`AgentGuide.md`), тож агент може прочитати його офлайн,
+саме для встановленої версії. Ключові правила продубльовано в XML-документації типів
+(`KatottgDataset`, `KatottgCode`), яку агенти бачать через IntelliSense або декомпіляцію.
+
 ## Дані
 
 Дані взято з офіційного Кодифікатора, затвердженого наказом Мінрегіону від 26.11.2020 № 290
 (в редакції наказу від 12.01.2021 № 3). Джерело — сайт Міністерства розвитку громад та територій
-України. Вихідні xlsx-файли зберігаються в [`OfficialData/`](OfficialData). Код бібліотеки поширюється
-за ліцензією MIT ([LICENSE](LICENSE)).
+України. Вихідні xlsx-файли зберігаються в [`OfficialData/`](https://github.com/UkrUtils/Katottg/tree/main/OfficialData). Код бібліотеки поширюється
+за ліцензією MIT ([LICENSE](https://github.com/UkrUtils/Katottg/blob/main/LICENSE)).
 
 ## Розробка
 
-Як збирати, тестувати й оновлювати дані, описано в [AGENTS.md](AGENTS.md). План розвитку лежить у
-[Docs/ImplementationPlan.md](Docs/ImplementationPlan.md).
+Як збирати, тестувати й оновлювати дані, описано в [AGENTS.md](https://github.com/UkrUtils/Katottg/blob/main/AGENTS.md). План розвитку лежить у
+[Docs/ImplementationPlan.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/ImplementationPlan.md).

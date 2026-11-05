@@ -1,0 +1,140 @@
+# Реліз однією кнопкою: Actions → Release → Run workflow.
+#
+# Версія береться з Source/Directory.Build.props (PackageVersion) — підвищте її (разом із
+# VersionDate) у PR перед релізом. Workflow:
+#   build   — перевіряє, що тег v<версія> ще не існує; збирає, тестує, пакує (nupkg + snupkg);
+#   publish — лише з main і без dry-run: публікує на nuget.org через Trusted Publishing
+#             (OIDC, без збережених API-ключів), створює тег і GitHub Release з пакетами.
+# dry-run = true виконує лише build (з будь-якої гілки) і викладає пакети як артефакт.
+#
+# Одноразове налаштування описано в AGENTS.md, розділ «Реліз».
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Лише зібрати й перевірити пакети, нічого не публікувати"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      edition: ${{ steps.version.outputs.edition }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - name: Guard — publish only from main
+        if: ${{ !inputs.dry-run && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::Публікувати можна лише з main (зараз: ${GITHUB_REF}). Для перевірки з іншої гілки увімкніть dry-run."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(dotnet msbuild Source/UkrUtils.Katottg/UkrUtils.Katottg.csproj -getProperty:PackageVersion)
+          edition=$(ls OfficialData/katottg-*.xlsx | sort | tail -n 1 | xargs -n 1 basename)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "edition=$edition" >> "$GITHUB_OUTPUT"
+          if [[ "$version" == *-* ]]; then echo "prerelease=--prerelease" >> "$GITHUB_OUTPUT"; fi
+          {
+            echo "### Release v$version"
+            echo "Вбудована редакція: \`$edition\`"
+            [[ "${{ inputs.dry-run }}" == "true" ]] && echo "**Dry run** — нічого не опубліковано."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guard — tag must not exist
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/v${{ steps.version.outputs.version }}" > /dev/null; then
+            echo "::error::Тег v${{ steps.version.outputs.version }} уже існує. Підвищте PackageVersion у Source/Directory.Build.props."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore Source/UkrUtils.Katottg.slnx
+
+      - name: Build
+        run: dotnet build Source/UkrUtils.Katottg.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Source/UkrUtils.Katottg.slnx --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack Source/UkrUtils.Katottg.slnx --configuration Release --no-build --output artifacts/packages
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/packages/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: ${{ !inputs.dry-run && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    # Політику Trusted Publishing на nuget.org можна прив’язати до цього середовища;
+    # у налаштуваннях середовища можна також додати обов’язкове схвалення.
+    environment: nuget
+    permissions:
+      contents: write   # тег і GitHub Release
+      id-token: write   # OIDC-токен для nuget.org Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: artifacts/packages
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: NuGet login (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish to nuget.org
+        # .snupkg публікуються автоматично разом з .nupkg; --skip-duplicate робить повторний запуск безпечним.
+        run: >
+          dotnet nuget push "artifacts/packages/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+          TAG: ${{ needs.build.outputs.tag }}
+          EDITION: ${{ needs.build.outputs.edition }}
+        run: |
+          notes="Вбудована редакція кодифікатора: \`$EDITION\`.
+
+          Пакети: [UkrUtils.Katottg](https://www.nuget.org/packages/UkrUtils.Katottg/$VERSION) · [UkrUtils.Katottg.Import](https://www.nuget.org/packages/UkrUtils.Katottg.Import/$VERSION) · [UkrUtils.Katottg.Tool](https://www.nuget.org/packages/UkrUtils.Katottg.Tool/$VERSION)"
+          gh release create "$TAG" artifacts/packages/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes "$notes" \
+            --generate-notes \
+            ${{ needs.build.outputs.prerelease }}

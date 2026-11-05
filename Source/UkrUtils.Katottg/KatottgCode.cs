@@ -11,6 +11,12 @@ namespace UkrUtils.Katottg;
 /// район у місті та 5-значний службовий хвіст. Перші 12 цифр (<see cref="SignificantPart"/>)
 /// унікальні для кожного об’єкта; хвіст з ієрархії не виводиться.
 /// Значення <c>default</c> — це <c>UA00000000000000000</c>, такого коду в кодифікаторі немає.
+/// <para>
+/// Код унікальний у межах редакції, тож для зберігання в БД досить одного поля з кодом
+/// найнижчого рівня (<c>char(19)</c> через <see cref="ToString()"/> або <c>bigint</c> через
+/// <see cref="Value"/>). Не обчислюйте повний код батька з коду дитини: хвоста батька там немає —
+/// використовуйте <see cref="KatottgUnit.Parent"/> або <see cref="HierarchyPrefix"/>.
+/// </para>
 /// </remarks>
 public readonly struct KatottgCode
     : IEquatable<KatottgCode>, IComparable<KatottgCode>, IComparable,

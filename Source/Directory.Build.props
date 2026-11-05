@@ -17,6 +17,17 @@
         <PackageProjectUrl>https://github.com/UkrUtils/Katottg</PackageProjectUrl>
         <RepositoryUrl>https://github.com/UkrUtils/Katottg</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <PackageReleaseNotes>https://github.com/UkrUtils/Katottg/releases/tag/v$(PackageVersion)</PackageReleaseNotes>
+
+        <!-- Налагодження пакетів: Source Link (вбудований у .NET SDK) + окремий пакет символів. -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <!-- Перевіряє структуру пакета під час pack. -->
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <!-- На CI — детерміновані шляхи у PDB, щоб збірка була відтворюваною. -->
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
 
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -31,7 +42,8 @@
     </ItemGroup>
 
     <!-- README і посібник для AI-агентів їдуть у кожен пакет: NuGet показує README, а агенти
-         знаходять AgentGuide.md поруч у кеші пакетів. -->
+         знаходять AgentGuide.md у кеші пакетів (~/.nuget/packages/<id>/<версія>/AgentGuide.md).
+         AGENTS.md репозиторію сюди НЕ входить: він про зміну бібліотеки, а не про використання. -->
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
         <None Include="$(MSBuildThisFileDirectory)..\Docs\AgentGuide.md" Pack="true" PackagePath="\" Visible="false" />

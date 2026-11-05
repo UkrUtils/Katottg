@@ -5,8 +5,22 @@ namespace UkrUtils.Katottg;
 
 /// <summary>
 /// Незмінний набір даних кодифікатора: усі об’єкти, ієрархія та індекси пошуку.
-/// Безпечний для одночасного читання з багатьох потоків.
+/// Безпечний для одночасного читання з багатьох потоків. Почніть з <see cref="Embedded"/>.
 /// </summary>
+/// <remarks>
+/// Головні правила роботи з КАТОТТГ:
+/// <list type="bullet">
+/// <item>Ключ — <see cref="KatottgCode"/>, ніколи не назва: назви повторюються навіть в одній громаді.
+/// Людині показуйте <see cref="KatottgUnit.DisplayName"/> або <see cref="KatottgUnit.FullName"/>.</item>
+/// <item>У БД зберігайте лише код найнижчого рівня; батьки — з <see cref="Find"/> або
+/// <see cref="KatottgUnit.ToAddress"/>, у SQL — за <see cref="KatottgCode.HierarchyPrefix"/>.</item>
+/// <item>Адресу з довільного тексту передавайте в <see cref="Search(string, KatottgSearchOptions?)"/>
+/// як є; не розбирайте її самостійно.</item>
+/// <item>Рівні ієрархії можуть бути відсутні (Київ, Севастополь, Прип’ять): перевіряйте <c>null</c>.</item>
+/// </list>
+/// Посібник для AI-агентів: <c>AgentGuide.md</c> у корені пакета або
+/// https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
+/// </remarks>
 public sealed partial class KatottgDataset
 {
     private readonly KatottgUnit[] _units;
