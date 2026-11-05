@@ -16,16 +16,16 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore Source/UkrUtils.Katottg.sln
+        run: dotnet restore Source/UkrUtils.Katottg.slnx
 
       - name: Build
-        run: dotnet build Source/UkrUtils.Katottg.sln --configuration Release --no-restore
+        run: dotnet build Source/UkrUtils.Katottg.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Source/UkrUtils.Katottg.sln --configuration Release --no-build
+        run: dotnet test Source/UkrUtils.Katottg.slnx --configuration Release --no-build
 
       - name: Pack
-        run: dotnet pack Source/UkrUtils.Katottg.sln --configuration Release --no-build --output artifacts/packages
+        run: dotnet pack Source/UkrUtils.Katottg.slnx --configuration Release --no-build --output artifacts/packages
 
       - uses: actions/upload-artifact@v4
         with:

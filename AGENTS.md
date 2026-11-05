@@ -7,7 +7,7 @@
 ## Команди
 
 ```bash
-dotnet build Source/UkrUtils.Katottg.sln
+dotnet build Source/UkrUtils.Katottg.slnx
 ```
 
 ```bash
@@ -15,7 +15,7 @@ dotnet test Tests/UkrUtils.Katottg.Tests
 ```
 
 ```bash
-dotnet pack Source/UkrUtils.Katottg.sln -c Release -o artifacts/packages
+dotnet pack Source/UkrUtils.Katottg.slnx -c Release -o artifacts/packages
 ```
 
 ```bash
