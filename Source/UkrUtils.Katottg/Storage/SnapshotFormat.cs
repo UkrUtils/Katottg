@@ -5,16 +5,16 @@ using System.Text;
 namespace UkrUtils.Katottg.Storage;
 
 /// <summary>
-/// Бінарний знімок набору даних (little-endian, зазвичай у gzip):
+/// Binary dataset snapshot (little-endian, usually inside gzip):
 /// <code>
-/// magic "KATG" | version u16 | edition-date i32 (yyyyMMdd) | sha256[32] (нулі = невідомо)
-/// source: рядок (порожній = невідомо)
+/// magic "KATG" | version u16 | edition-date i32 (yyyyMMdd) | sha256[32] (zeros = unknown)
+/// source: string (empty = unknown)
 /// count u32
-/// string-table: u32 count, далі рядки
-/// records: count × { code u64, parentIndex i32 (-1 = корінь), category u8, nameIndex u32 }
+/// string-table: u32 count, followed by the strings
+/// records: count × { code u64, parentIndex i32 (-1 = root), category u8, nameIndex u32 }
 /// </code>
-/// Рядок — це довжина в байтах (7-бітне кодування, як у <see cref="BinaryWriter"/>) і UTF-8.
-/// Таблиця рядків — унікальні назви в порядку першої появи, тож вивід детермінований.
+/// A string is a length in bytes (7-bit encoding, as in <see cref="BinaryWriter"/>) and UTF-8.
+/// The string table holds unique names in order of first appearance, so the output is deterministic.
 /// </summary>
 internal static class SnapshotFormat
 {
@@ -178,7 +178,7 @@ internal static class SnapshotFormat
         return new DateOnly(year, month, day);
     }
 
-    /// <summary>Повертає вже прочитаний префікс, потім решту потоку.</summary>
+    /// <summary>Returns the already-read prefix, then the rest of the stream.</summary>
     private sealed class PrefixedStream(byte[] prefix, Stream inner) : Stream
     {
         private int _position;

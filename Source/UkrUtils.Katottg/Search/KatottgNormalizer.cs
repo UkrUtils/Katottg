@@ -3,35 +3,35 @@ using System.Text;
 
 namespace UkrUtils.Katottg.Search;
 
-/// <summary>Що робити з апострофами під час нормалізації.</summary>
+/// <summary>What to do with apostrophes during normalization.</summary>
 public enum ApostropheHandling
 {
-    /// <summary>Прибрати: «Кам’янське» = «Камянське». За замовчуванням.</summary>
+    /// <summary>Remove them: "Кам’янське" = "Камянське". The default.</summary>
     Remove,
 
-    /// <summary>Звести всі варіанти (<c>' ’ ʼ ` ‘</c>, а також <c>ъ</c>) до <c>ʼ</c> (U+02BC).</summary>
+    /// <summary>Unify all variants (<c>' ’ ʼ ` ‘</c>, and also <c>ъ</c>) to <c>ʼ</c> (U+02BC).</summary>
     Unify,
 }
 
 /// <summary>
-/// Нормалізація назв для пошуку. Однаково застосовується до назв в індексі й до запиту.
+/// Normalization of names for search. Applied identically to names in the index and to the query.
 /// </summary>
 /// <remarks>
 /// <list type="number">
-/// <item>Нижній регістр; композиція Unicode (NFC).</item>
-/// <item>У словах зі змішаним алфавітом (як-от «Вiйтовецька» з латинською i) латинські двійники
-/// стають кириличними. Слова, повністю написані латиницею, лишаються без змін.</item>
-/// <item>Апострофи прибираються або уніфікуються (<see cref="ApostropheHandling"/>).</item>
-/// <item>Дефіси, крапки, коми, кілька пробілів поспіль — один пробіл.</item>
-/// <item><c>ґ→г</c>, <c>ё→е</c>, <c>ы→и</c>, <c>э→е</c>, <c>ъ→ʼ</c> — терпимість до російської розкладки.</item>
+/// <item>Lower case; Unicode composition (NFC).</item>
+/// <item>In words with mixed alphabets (such as "Вiйтовецька" with a Latin i) the Latin look-alikes
+/// become Cyrillic. Words written entirely in Latin are left unchanged.</item>
+/// <item>Apostrophes are removed or unified (<see cref="ApostropheHandling"/>).</item>
+/// <item>Hyphens, periods, commas, and several consecutive spaces become a single space.</item>
+/// <item><c>ґ→г</c>, <c>ё→е</c>, <c>ы→и</c>, <c>э→е</c>, <c>ъ→ʼ</c> — tolerance for the Russian keyboard layout.</item>
 /// </list>
 /// </remarks>
 public static class KatottgNormalizer
 {
-    /// <summary>Уніфікований апостроф (U+02BC, модифікатор-апостроф, рекомендований для української).</summary>
+    /// <summary>Unified apostrophe (U+02BC, modifier letter apostrophe, recommended for Ukrainian).</summary>
     public const char Apostrophe = 'ʼ';
 
-    /// <summary>Нормалізує текст; див. опис класу.</summary>
+    /// <summary>Normalizes text; see the class description.</summary>
     public static string Normalize(string text, ApostropheHandling apostrophes = ApostropheHandling.Remove)
     {
         ArgumentNullException.ThrowIfNull(text);

@@ -1,54 +1,54 @@
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Категорія об’єкта кодифікатора. Значення збігається з ASCII-кодом латинської літери з офіційного файлу.
+/// Category of a codifier object. The value equals the ASCII code of the Latin letter from the official file.
 /// </summary>
 /// <remarks>
-/// Набір не закритий (наприклад, категорію <c>T</c> поступово скасовують), тому невідомі літери
-/// дають <see cref="Unknown"/>.
+/// The set is not closed (for example, category <c>T</c> is being phased out), so unknown letters
+/// yield <see cref="Unknown"/>.
 /// </remarks>
 public enum KatottgCategory : byte
 {
-    /// <summary>Невідома літера категорії.</summary>
+    /// <summary>Unknown category letter.</summary>
     Unknown = 0,
 
-    /// <summary><c>O</c> — область, Автономна Республіка Крим.</summary>
+    /// <summary><c>O</c> — region, Autonomous Republic of Crimea.</summary>
     Region = (byte)'O',
 
-    /// <summary><c>K</c> — місто зі спеціальним статусом (Київ, Севастополь).</summary>
+    /// <summary><c>K</c> — city with special status (Kyiv, Sevastopol).</summary>
     SpecialStatusCity = (byte)'K',
 
-    /// <summary><c>P</c> — район.</summary>
+    /// <summary><c>P</c> — district.</summary>
     District = (byte)'P',
 
-    /// <summary><c>H</c> — територія територіальної громади.</summary>
+    /// <summary><c>H</c> — territory of a territorial community (hromada).</summary>
     Community = (byte)'H',
 
-    /// <summary><c>M</c> — місто.</summary>
+    /// <summary><c>M</c> — city.</summary>
     City = (byte)'M',
 
-    /// <summary><c>T</c> — селище міського типу.</summary>
+    /// <summary><c>T</c> — urban-type settlement.</summary>
     UrbanTypeSettlement = (byte)'T',
 
-    /// <summary><c>X</c> — селище.</summary>
+    /// <summary><c>X</c> — settlement (rural-type).</summary>
     Settlement = (byte)'X',
 
-    /// <summary><c>C</c> — село.</summary>
+    /// <summary><c>C</c> — village.</summary>
     Village = (byte)'C',
 
-    /// <summary><c>B</c> — район у місті.</summary>
+    /// <summary><c>B</c> — city district.</summary>
     CityDistrict = (byte)'B',
 }
 
-/// <summary>Допоміжні методи для <see cref="KatottgCategory"/>.</summary>
+/// <summary>Helper methods for <see cref="KatottgCategory"/>.</summary>
 public static class KatottgCategoryExtensions
 {
-    /// <summary>Населений пункт: місто, СМТ, селище, село або місто зі спеціальним статусом.</summary>
+    /// <summary>Populated place: city, urban-type settlement, settlement, village, or city with special status.</summary>
     public static bool IsPopulatedPlace(this KatottgCategory category) => category is
         KatottgCategory.City or KatottgCategory.UrbanTypeSettlement or KatottgCategory.Settlement or
         KatottgCategory.Village or KatottgCategory.SpecialStatusCity;
 
-    /// <summary>Українська назва категорії: «село», «місто»…</summary>
+    /// <summary>Ukrainian name of the category: "село" (village), "місто" (city), and so on.</summary>
     public static string ToUkrainianName(this KatottgCategory category) => category switch
     {
         KatottgCategory.Region => "область",
@@ -64,8 +64,8 @@ public static class KatottgCategoryExtensions
     };
 
     /// <summary>
-    /// Скорочення, яке пишуть <b>перед</b> назвою: «с.», «м.», «смт», «с-ще».
-    /// Для областей, районів і громад — порожній рядок (див. <see cref="ToShortSuffix"/>).
+    /// Abbreviation written <b>before</b> the name: "с.", "м.", "смт", "с-ще".
+    /// Empty string for regions, districts, and communities (see <see cref="ToShortSuffix"/>).
     /// </summary>
     public static string ToShortPrefix(this KatottgCategory category) => category switch
     {
@@ -77,8 +77,8 @@ public static class KatottgCategoryExtensions
     };
 
     /// <summary>
-    /// Скорочення, яке пишуть <b>після</b> назви: «обл.», «р-н», «громада».
-    /// Для населених пунктів — порожній рядок (див. <see cref="ToShortPrefix"/>).
+    /// Abbreviation written <b>after</b> the name: "обл." (region), "р-н" (district), "громада" (community).
+    /// Empty string for populated places (see <see cref="ToShortPrefix"/>).
     /// </summary>
     public static string ToShortSuffix(this KatottgCategory category) => category switch
     {
@@ -89,8 +89,8 @@ public static class KatottgCategoryExtensions
     };
 
     /// <summary>
-    /// Категорія за літерою з офіційного файлу. Приймає латиницю і візуально однакову кирилицю
-    /// в обох регістрах; для інших символів повертає <see cref="KatottgCategory.Unknown"/>.
+    /// Category by the letter from the official file. Accepts the Latin letter and the visually identical Cyrillic one
+    /// in either case; returns <see cref="KatottgCategory.Unknown"/> for any other character.
     /// </summary>
     public static KatottgCategory FromLetter(char letter) => char.ToUpperInvariant(letter) switch
     {
@@ -106,6 +106,6 @@ public static class KatottgCategoryExtensions
         _ => KatottgCategory.Unknown,
     };
 
-    /// <summary>Латинська літера категорії, як в офіційному файлі; <c>'\0'</c> для <see cref="KatottgCategory.Unknown"/>.</summary>
+    /// <summary>Latin category letter as in the official file; <c>'\0'</c> for <see cref="KatottgCategory.Unknown"/>.</summary>
     public static char ToLetter(this KatottgCategory category) => (char)(byte)category;
 }

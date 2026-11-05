@@ -1,14 +1,14 @@
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Вузол дерева для відображення (TreeView, дерево в UI, вкладений JSON). На відміну від
-/// <see cref="KatottgUnit"/>, містить лише потрібні гілки: вибрані об’єкти та їхніх предків.
+/// Tree node for display (TreeView, a UI tree, nested JSON). Unlike
+/// <see cref="KatottgUnit"/>, it contains only the needed branches: the selected objects and their ancestors.
 /// </summary>
 /// <remarks>
-/// Повне дерево кодифікатора вже є в самих об’єктах (<see cref="KatottgDataset.Regions"/> і
-/// <see cref="KatottgUnit.Children"/>) — його можна обходити напряму або ліниво підвантажувати в UI.
-/// <see cref="KatottgTreeNode"/> потрібен, коли треба показати <b>частину</b> дерева: результати
-/// пошуку разом із шляхом до них.
+/// The full codifier tree already exists in the objects themselves (<see cref="KatottgDataset.Regions"/> and
+/// <see cref="KatottgUnit.Children"/>); it can be walked directly or loaded lazily in a UI.
+/// <see cref="KatottgTreeNode"/> is needed when you want to show a <b>part</b> of the tree: search
+/// results together with the path to them.
 /// </remarks>
 public sealed class KatottgTreeNode
 {
@@ -20,19 +20,19 @@ public sealed class KatottgTreeNode
         IsMatch = isMatch;
     }
 
-    /// <summary>Об’єкт кодифікатора (код, назва, категорія, <see cref="KatottgUnit.DisplayName"/>…).</summary>
+    /// <summary>Codifier object (code, name, category, <see cref="KatottgUnit.DisplayName"/>…).</summary>
     public KatottgUnit Unit { get; }
 
     /// <summary>
-    /// <c>true</c> — об’єкт був серед вибраних (наприклад, результат пошуку); <c>false</c> — предок,
-    /// доданий для контексту, або нащадок, доданий через <c>includeDescendants</c>.
+    /// <c>true</c> — the object was among the selected ones (for example, a search result); <c>false</c> — an ancestor
+    /// added for context, or a descendant added via <c>includeDescendants</c>.
     /// </summary>
     public bool IsMatch { get; }
 
-    /// <summary>Дочірні вузли в порядку офіційного файлу.</summary>
+    /// <summary>Child nodes in the order of the official file.</summary>
     public IReadOnlyList<KatottgTreeNode> Children { get; private set; } = s_none;
 
-    /// <summary>Цей вузол і всі вузли під ним, обхід у глибину.</summary>
+    /// <summary>This node and all nodes beneath it, depth-first traversal.</summary>
     public IEnumerable<KatottgTreeNode> DescendantsAndSelf()
     {
         var stack = new Stack<KatottgTreeNode>();
@@ -50,11 +50,11 @@ public sealed class KatottgTreeNode
     public override string ToString() => IsMatch ? $"* {Unit}" : Unit.ToString();
 
     /// <summary>
-    /// Будує дерево з вибраних об’єктів та всіх їхніх предків. Корені — області й міста зі
-    /// спецстатусом; порядок — як в офіційному файлі; дублікати у вхідних даних ігноруються.
+    /// Builds a tree from the selected objects and all their ancestors. Roots are regions and cities with
+    /// special status; the order is as in the official file; duplicates in the input are ignored.
     /// </summary>
-    /// <param name="units">Вибрані об’єкти, наприклад результати пошуку. Мають належати одному набору даних.</param>
-    /// <param name="includeDescendants">Додати також усіх нащадків вибраних об’єктів (повні піддерева).</param>
+    /// <param name="units">Selected objects, for example search results. They must belong to the same dataset.</param>
+    /// <param name="includeDescendants">Also add all descendants of the selected objects (full subtrees).</param>
     public static IReadOnlyList<KatottgTreeNode> Build(IEnumerable<KatottgUnit> units, bool includeDescendants = false)
     {
         ArgumentNullException.ThrowIfNull(units);

@@ -1,17 +1,17 @@
 namespace UkrUtils.Katottg.Search;
 
 /// <summary>
-/// Префіксний індекс нормалізованих назв: відсортований масив «суфіксів від початку кожного слова»
-/// і бінарний пошук. Компактніший за trie і так само швидкий для ~30 тис. назв.
+/// Prefix index of normalized names: a sorted array of "suffixes from the start of each word"
+/// and binary search. More compact than a trie and just as fast for ~30 thousand names.
 /// </summary>
 internal sealed class NameIndex
 {
     private readonly string[] _keys;
     private readonly Entry[] _entries;
 
-    /// <param name="Key">Індекс у <see cref="_keys"/>.</param>
-    /// <param name="Offset">Початок слова в ключі; 0 — уся назва.</param>
-    /// <param name="Unit">Індекс об’єкта в наборі.</param>
+    /// <param name="Key">Index into <see cref="_keys"/>.</param>
+    /// <param name="Offset">Start of the word in the key; 0 — the whole name.</param>
+    /// <param name="Unit">Index of the object in the dataset.</param>
     private readonly record struct Entry(int Key, int Offset, int Unit);
 
     public NameIndex(IReadOnlyList<KatottgUnit> units)
@@ -53,7 +53,7 @@ internal sealed class NameIndex
     }
 
     /// <summary>
-    /// Збіги з нормалізованим запитом: для кожного об’єкта — найкращий вид збігу і базова оцінка.
+    /// Matches for the normalized query: for each object, the best match kind and the base score.
     /// </summary>
     public void Match(string query, bool includeWordPrefix, Dictionary<int, (MatchKind Kind, double Score)> results)
     {

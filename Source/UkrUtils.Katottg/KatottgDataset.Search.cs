@@ -6,23 +6,23 @@ public sealed partial class KatottgDataset
 {
     private NameIndex? _nameIndex;
 
-    /// <summary>Індекс назв будується ліниво при першому пошуку.</summary>
+    /// <summary>The name index is built lazily on the first search.</summary>
     private NameIndex NameIndex => LazyInitializer.EnsureInitialized(ref _nameIndex, () => new NameIndex(_units));
 
     /// <summary>
-    /// Пошук за вільним рядком: назвою, кодом або адресою через коми
-    /// («с. Андріївка, Бердянський р-н, Запорізька обл.»).
+    /// Search by free-form string: a name, a code, or a comma-separated address
+    /// ("с. Андріївка, Бердянський р-н, Запорізька обл." — village Andriivka, Berdiansk district, Zaporizhzhia region).
     /// </summary>
     /// <remarks>
-    /// Маркери («с.», «м.», «смт», «р-н», «обл.», «громада»…) стають фільтром за категорією. Якщо
-    /// з таким фільтром нічого не знайдено, пошук повторюється без нього: категорію в адресі часто
-    /// вказують неточно. Решта частин після ком — контекст: результат має лежати всередині
-    /// об’єкта з такою назвою. Контекст із маркером («Бердянський р-н») обов’язковий; частини без
-    /// маркера, які нічого не звужують (вулиця, індекс, номер будинку), ігноруються. Кожну частину
-    /// пробуємо як ціль; перемагає комбінація, що не відкидала маркер цілі, врахувала більше
-    /// контекстів і дала найконкретніший об’єкт. Нечіткий пошук і транслітерація — у наступних етапах.
+    /// Markers ("с.", "м.", "смт", "р-н", "обл.", "громада"…) become a category filter. If
+    /// nothing is found with such a filter, the search is repeated without it: the category in an address is often
+    /// given inaccurately. The remaining comma-separated parts are context: the result must lie inside an
+    /// object with that name. Context with a marker ("Бердянський р-н") is mandatory; parts without a
+    /// marker that narrow nothing (street, postal code, house number) are ignored. Each part
+    /// is tried as the target; the winning combination is the one that did not discard the target's marker, used more
+    /// contexts, and produced the most specific object. Fuzzy search and transliteration come in later stages.
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException"><see cref="KatottgSearchOptions.Limit"/> менший за 1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="KatottgSearchOptions.Limit"/> is less than 1.</exception>
     public KatottgSearchResult Search(string text, KatottgSearchOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -70,8 +70,8 @@ public sealed partial class KatottgDataset
         }
     }
 
-    /// <summary>Структурований пошук: назва плюс необов’язкові область, район і громада.</summary>
-    /// <exception cref="ArgumentOutOfRangeException"><see cref="KatottgQuery.Limit"/> менший за 1.</exception>
+    /// <summary>Structured search: a name plus optional region, district, and community.</summary>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="KatottgQuery.Limit"/> is less than 1.</exception>
     public IReadOnlyList<KatottgSearchHit> Search(KatottgQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
@@ -90,10 +90,10 @@ public sealed partial class KatottgDataset
     }
 
     /// <summary>
-    /// Шукає ціль з урахуванням контекстів. Контекст із маркером («р-н», «обл.») або з поля
-    /// структурованого запиту обов’язковий: якщо його не знайдено, результатів немає. Контекст без
-    /// маркера (вулиця, індекс, будинок, просто назва) застосовується, лише якщо після нього
-    /// щось лишається.
+    /// Searches for the target taking contexts into account. A context with a marker ("р-н", "обл.") or from a field of the
+    /// structured query is mandatory: if it is not found, there are no results. A context without a
+    /// marker (street, postal code, house, or just a name) is applied only if something
+    /// remains after it.
     /// </summary>
     private RunResult Run(QueryPart target, IReadOnlyList<QueryPart> contexts,
         IReadOnlyCollection<KatottgCategory>? categories, KatottgUnit? within, int limit)
@@ -131,7 +131,7 @@ public sealed partial class KatottgDataset
         return new RunResult(hits, usedFallback, applied);
     }
 
-    /// <summary>Об’єкти, всередині яких може лежати результат (для частини-контексту).</summary>
+    /// <summary>Objects inside which the result may lie (for a context part).</summary>
     private HashSet<KatottgUnit> ResolveScope(QueryPart context)
     {
         var matches = Match(context, includeWordPrefix: false);
@@ -159,7 +159,7 @@ public sealed partial class KatottgDataset
         return results;
     }
 
-    /// <summary>Надбавка за основну категорію маркера; більша за різницю ваг сусідніх категорій.</summary>
+    /// <summary>Bonus for the marker's primary category; larger than the weight difference between neighboring categories.</summary>
     private const double PrimaryCategoryBonus = 0.015;
 
     private (List<KatottgSearchHit> Hits, int AppliedContexts) Collect(Dictionary<int, (MatchKind Kind, double Score)> matches,
@@ -212,7 +212,7 @@ public sealed partial class KatottgDataset
     private static bool Accepts(KatottgUnit unit, IReadOnlyCollection<KatottgCategory>? categories, KatottgUnit? within)
         => (categories is null || categories.Contains(unit.Category)) && (within is null || within.Contains(unit));
 
-    /// <summary>Чи є серед строгих предків <paramref name="unit"/> хоч один об’єкт зі <paramref name="scope"/>.</summary>
+    /// <summary>Whether any strict ancestor of <paramref name="unit"/> is an object from <paramref name="scope"/>.</summary>
     private static bool IsInside(KatottgUnit unit, HashSet<KatottgUnit> scope)
     {
         for (var a = unit.Parent; a is not null; a = a.Parent)
@@ -228,7 +228,7 @@ public sealed partial class KatottgDataset
          : options is null ? marker
          : marker.Where(options.Contains).ToArray();
 
-    /// <summary>Невелика надбавка за важливість категорії: місто вище за однойменне село.</summary>
+    /// <summary>Small bonus for category importance: a city ranks above a village of the same name.</summary>
     private static double CategoryWeight(KatottgCategory category) => category switch
     {
         KatottgCategory.SpecialStatusCity => 0.09,

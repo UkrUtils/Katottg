@@ -1,14 +1,14 @@
 namespace UkrUtils.Katottg.Search;
 
 /// <summary>
-/// Частина запиту після нормалізації: текст без маркерів і категорії, які задав маркер
-/// (перша — основна, наприклад для «с-ще» основна — селище, а СМТ лише допускається).
+/// Part of a query after normalization: the text without markers and the categories given by the marker
+/// (the first is primary; for example, for "с-ще" the primary is settlement, while urban-type settlement is merely allowed).
 /// </summary>
 internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? Categories)
 {
     public bool IsEmpty => Text.Length == 0;
 
-    /// <summary>Чи задав категорії маркер у тексті (а не роль поля). Такий контекст обов’язковий.</summary>
+    /// <summary>Whether the categories were set by a marker in the text (rather than by a field's role). Such context is mandatory.</summary>
     public bool IsMarked => Categories is not null;
 
     public KatottgCategory? PrimaryCategory => Categories is { Length: > 0 } c ? c[0] : null;
@@ -60,7 +60,7 @@ internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? 
         ["арк"] = "автономна республіка крим",
     };
 
-    /// <summary>Нормалізує частину запиту й відокремлює маркери категорії.</summary>
+    /// <summary>Normalizes a query part and separates the category markers.</summary>
     public static QueryPart Parse(string raw)
     {
         var tokens = KatottgNormalizer.Normalize(raw).Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -112,7 +112,7 @@ internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? 
         return new QueryPart(text, s_aliases.GetValueOrDefault(text), categories);
     }
 
-    /// <summary>Те саме, але категорії задає роль поля структурованого запиту, а не маркер.</summary>
+    /// <summary>The same, but the categories are set by the role of a structured-query field, not by a marker.</summary>
     public static QueryPart Parse(string raw, KatottgCategory[] roleCategories)
         => Parse(raw) with { Categories = roleCategories };
 

@@ -1,60 +1,60 @@
 namespace UkrUtils.Katottg;
 
 /// <summary>
-/// Пласка адреса об’єкта кодифікатора з кодами всіх рівнів ієрархії. Значення (DTO): не посилається
-/// на <see cref="KatottgDataset"/>, має рівність за значенням, зручне для JSON і відповідей API.
-/// Отримати: <see cref="KatottgUnit.ToAddress"/>.
+/// Flat address of a codifier object with the codes of all hierarchy levels. A value (DTO): it does not reference
+/// <see cref="KatottgDataset"/>, has value equality, and is convenient for JSON and API responses.
+/// Obtain it with <see cref="KatottgUnit.ToAddress"/>.
 /// </summary>
 /// <remarks>
-/// Рівні, яких в об’єкта немає, дорівнюють <c>null</c>: у Києві та Севастополі немає району й
-/// громади, у Прип’яті й Чорнобилі — району й громади, у громади — населеного пункту.
+/// Levels that the object does not have are <c>null</c>: Kyiv and Sevastopol have no district or
+/// community, Prypiat and Chornobyl have no district or community, a community has no populated place.
 /// </remarks>
 public sealed record KatottgAddress
 {
-    /// <summary>Код самого об’єкта.</summary>
+    /// <summary>Code of the object itself.</summary>
     public required KatottgCode Code { get; init; }
 
-    /// <summary>Категорія самого об’єкта.</summary>
+    /// <summary>Category of the object itself.</summary>
     public required KatottgCategory Category { get; init; }
 
-    /// <summary>Назва самого об’єкта.</summary>
+    /// <summary>Name of the object itself.</summary>
     public required string Name { get; init; }
 
-    /// <summary>Повна адреса: «с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим».</summary>
+    /// <summary>Full address: "с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим" (village Andriivka, Andriivka community, Bakhchysarai district, AR Crimea).</summary>
     public required string FullName { get; init; }
 
-    /// <summary>Див. <see cref="KatottgUnit.IsTemporarilyNotInForce"/>.</summary>
+    /// <summary>See <see cref="KatottgUnit.IsTemporarilyNotInForce"/>.</summary>
     public required bool IsTemporarilyNotInForce { get; init; }
 
-    /// <summary>Область, АР Крим або місто зі спеціальним статусом (<c>O</c>/<c>K</c>). Завжди є.</summary>
+    /// <summary>Region, AR Crimea, or a city with special status (<c>O</c>/<c>K</c>). Always present.</summary>
     public required KatottgAddressPart Region { get; init; }
 
-    /// <summary>Район (<c>P</c>).</summary>
+    /// <summary>District (<c>P</c>).</summary>
     public KatottgAddressPart? District { get; init; }
 
-    /// <summary>Територіальна громада (<c>H</c>).</summary>
+    /// <summary>Territorial community, hromada (<c>H</c>).</summary>
     public KatottgAddressPart? Community { get; init; }
 
-    /// <summary>Населений пункт (<c>M</c>/<c>T</c>/<c>X</c>/<c>C</c>/<c>K</c>); для району в місті — місто.</summary>
+    /// <summary>Populated place (<c>M</c>/<c>T</c>/<c>X</c>/<c>C</c>/<c>K</c>); for a city district, the city.</summary>
     public KatottgAddressPart? PopulatedPlace { get; init; }
 
-    /// <summary>Район у місті (<c>B</c>).</summary>
+    /// <summary>City district (<c>B</c>).</summary>
     public KatottgAddressPart? CityDistrict { get; init; }
 }
 
-/// <summary>Один рівень адреси: код, категорія, назва.</summary>
+/// <summary>One address level: code, category, name.</summary>
 public sealed record KatottgAddressPart
 {
-    /// <summary>Код об’єкта цього рівня.</summary>
+    /// <summary>Code of the object at this level.</summary>
     public required KatottgCode Code { get; init; }
 
-    /// <summary>Категорія.</summary>
+    /// <summary>Category.</summary>
     public required KatottgCategory Category { get; init; }
 
-    /// <summary>Офіційна назва: «Бахчисарайський».</summary>
+    /// <summary>Official name: "Бахчисарайський".</summary>
     public required string Name { get; init; }
 
-    /// <summary>Назва зі скороченням категорії: «Бахчисарайський р-н».</summary>
+    /// <summary>Name with the category abbreviation: "Бахчисарайський р-н".</summary>
     public required string DisplayName { get; init; }
 
     internal static KatottgAddressPart From(KatottgUnit unit) => new()
