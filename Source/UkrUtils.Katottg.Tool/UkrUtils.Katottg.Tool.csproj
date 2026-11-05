@@ -17,4 +17,8 @@
         <ProjectReference Include="..\UkrUtils.Katottg.Import\UkrUtils.Katottg.Import.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="UkrUtils.Katottg.Tests" />
+    </ItemGroup>
+
 </Project>

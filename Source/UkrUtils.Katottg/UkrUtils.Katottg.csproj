@@ -12,8 +12,10 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
+    <!-- Знімок генерує `katottg build-snapshot OfficialData -o Source/UkrUtils.Katottg/Data/katottg.bin.gz`.
+         WithCulture="false": інакше MSBuild сприймає ".bin" як культуру (мова біні) і кладе ресурс у сателітну збірку. -->
     <ItemGroup>
-        <EmbeddedResource Include="Data\katottg.bin.gz" LogicalName="UkrUtils.Katottg.Data.katottg.bin.gz" Condition="Exists('Data\katottg.bin.gz')" />
+        <EmbeddedResource Include="Data\katottg.bin.gz" LogicalName="UkrUtils.Katottg.Data.katottg.bin.gz" WithCulture="false" />
     </ItemGroup>
 
     <ItemGroup>
