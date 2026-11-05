@@ -1,6 +1,6 @@
-# Підтримати проєкт
+# Support the project
 
-UkrUtils.Katottg — безкоштовна бібліотека з відкритим кодом. Ваша підтримка йде на її супровід:
-оновлення даних з кожною новою редакцією кодифікатора КАТОТТГ та розробку нових функцій.
+UkrUtils.Katottg is a free, open-source library. Your support goes toward maintaining it:
+updating the data with every new edition of the KATOTTG codifier and building new features.
 
-<DonateButton lang="uk" />
+<DonateButton lang="en" />
