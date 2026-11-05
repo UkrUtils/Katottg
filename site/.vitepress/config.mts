@@ -78,6 +78,15 @@ export default defineConfig({
         returnToTopLabel: 'Нагору',
         sidebarMenuLabel: 'Меню',
         langMenuLabel: 'Змінити мову',
+        skipToContentLabel: 'Перейти до вмісту',
+        lightModeSwitchTitle: 'Перемкнути на світлу тему',
+        darkModeSwitchTitle: 'Перемкнути на темну тему',
+        notFound: {
+          title: 'СТОРІНКУ НЕ ЗНАЙДЕНО',
+          quote: 'Але якщо не змінювати напрямок і не шукати, де ви помилилися, можна опинитися там, куди прямуєте.',
+          linkLabel: 'перейти на головну',
+          linkText: 'Повернутися на головну',
+        },
       },
     },
     en: {
