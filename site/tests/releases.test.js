@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { normalizeReleases, formatReleaseDate, loadReleases } from '../.vitepress/lib/releases.js'
+import MarkdownIt from 'markdown-it'
+import { normalizeReleases, formatReleaseDate, loadReleases, renderReleaseNotes } from '../.vitepress/lib/releases.js'
 
 const IDS = ['UkrUtils.Katottg', 'UkrUtils.Katottg.Import', 'UkrUtils.Katottg.Tool']
 const rel = (o = {}) => ({
@@ -87,4 +88,29 @@ test('loadReleases warns at 100 releases', async () => {
   const r = await loadReleases({ fetchImpl: fake(200, body), env: {}, warn: m => warns.push(m), repo: REPO, packageIds: IDS })
   assert.equal(r.length, 100)
   assert.ok(warns.some(w => /pagination/.test(w)))
+})
+
+// Рендерер, як у VitePress: html увімкнено.
+const mdRenderer = () => new MarkdownIt({ html: true })
+
+test('renderReleaseNotes escapes raw HTML', () => {
+  const html = renderReleaseNotes(mdRenderer(), '<img src=x onerror=alert(1)>\n\n<script>alert(2)</script>')
+  assert.ok(!html.includes('<img'))
+  assert.ok(!html.includes('<script'))
+  assert.ok(html.includes('&lt;img'))
+})
+test('renderReleaseNotes restores html option', () => {
+  const md = mdRenderer()
+  renderReleaseNotes(md, 'text')
+  assert.equal(md.options.html, true)
+})
+test('renderReleaseNotes demotes headings', () => {
+  const html = renderReleaseNotes(mdRenderer(), "## What's Changed")
+  assert.ok(html.includes('<h3'))
+  assert.ok(!html.includes('<h2'))
+})
+test('renderReleaseNotes keeps markdown', () => {
+  const html = renderReleaseNotes(mdRenderer(), '**bold** [x](https://e.com)')
+  assert.ok(html.includes('<strong>bold</strong>'))
+  assert.ok(html.includes('<a href="https://e.com">'))
 })

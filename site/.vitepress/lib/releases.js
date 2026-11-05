@@ -76,3 +76,28 @@ export async function loadReleases({ fetchImpl, env, warn, repo, packageIds }) {
   }
   return normalizeReleases(raw, packageIds)
 }
+
+/**
+ * Рендерить нотатки релізу в безпечний HTML.
+ * Сирий HTML у тілі релізу (нотатки копіюють назви PR) екранується, а заголовки опускаються на рівень
+ * нижче, щоб не зливатися з власним h2 релізу. Рендерер VitePress створюється з html: true, тому
+ * опцію вимикаємо лише на час синхронного рендеру й повертаємо назад.
+ * @param {import('markdown-it')} md
+ * @param {string} markdown
+ * @returns {string}
+ */
+export function renderReleaseNotes(md, markdown) {
+  const previousHtml = md.options.html
+  md.set({ html: false })
+  try {
+    const tokens = md.parse(markdown, {})
+    for (const token of tokens) {
+      if (token.type === 'heading_open' || token.type === 'heading_close') {
+        token.tag = `h${Math.min(Number(token.tag.slice(1)) + 1, 6)}`
+      }
+    }
+    return md.renderer.render(tokens, md.options, {})
+  } finally {
+    md.set({ html: previousHtml })
+  }
+}
