@@ -3,14 +3,14 @@ import { VPButton } from 'vitepress/theme'
 import { donateUrl } from '../lib/donate.js'
 import { PAYPAL_BUTTON_ID } from '../site.config.js'
 
-const props = defineProps({ lang: { type: String, default: 'uk' } })
+const props = defineProps({ lang: { type: String, default: 'en' } })
 
 // Тексти інтерфейсу.
 const dict = {
   uk: { button: 'Підтримати через PayPal', soon: 'Кнопка донату скоро з’явиться.' },
   en: { button: 'Donate via PayPal', soon: 'The donate button is coming soon.' },
 }
-const t = dict[props.lang] ?? dict.uk
+const t = dict[props.lang] ?? dict.en
 const url = donateUrl(PAYPAL_BUTTON_ID)
 </script>
 

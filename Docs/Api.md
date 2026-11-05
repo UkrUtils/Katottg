@@ -1,48 +1,37 @@
-# UkrUtils.Katottg
+# API
 
-> Українська версія: [README.md](https://github.com/UkrUtils/Katottg/blob/main/README.md)
+> Українською: [Docs/uk/Api.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/uk/Api.md)
 
-A .NET library for working with the **Codifier of Administrative-Territorial Units and Territories of
-Territorial Communities (KATOTTG)**: search by name and address, the hierarchy "region → district →
-community → settlement → city district", code validation, and import of the official xlsx file.
-
-Site and documentation: https://ukrutils.github.io/Katottg/
-
-- Works out of the box: the official data is embedded in the package (~360 KB), no network required.
-- No dependencies, AOT- and trimming-friendly. The dataset is immutable and safe to share across threads.
-- Embedded edition: **03.11.2026** (`KatottgDataset.Embedded.Edition`), 31,751 records.
-
-| Package | Purpose |
-|---|---|
-| `UkrUtils.Katottg` | models, search, hierarchy, embedded data |
-| `UkrUtils.Katottg.Import` | parsing the official xlsx (`KatottgSheetParser`) |
-| `UkrUtils.Katottg.Tool` | the `katottg` CLI: `import`, `build-snapshot`, `search` |
-
-```bash
-dotnet add package UkrUtils.Katottg
-```
-
-There is a separate concise guide for AI agents: [Docs/en/AgentGuide.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/en/AgentGuide.md).
-
----
-
-## Quick start
+How to use the library, type by type. The quick start is in the
+[overview](https://ukrutils.github.io/Katottg/overview); why things work the way they do is in the
+[deep dive](https://ukrutils.github.io/Katottg/deep-dive).
 
 ```csharp
-using UkrUtils.Katottg;
+using UkrUtils.Katottg;                 // the main types
+using UkrUtils.Katottg.Search;          // only KatottgNormalizer, ApostropheHandling
+using UkrUtils.Katottg.Import;          // the UkrUtils.Katottg.Import package: xlsx parsing
 
-var katottg = KatottgDataset.Embedded;          // lazily loaded once (~12 ms)
-
-// By code
-var unit = katottg.Find(KatottgCode.Parse("UA01020010010075540"));
-Console.WriteLine(unit!.FullName);
-// с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим
-
-// By name or address
-var hit = katottg.Search("смт Андріївка, Бердянський р-н, Запорізька обл.").Best!;
-Console.WriteLine($"{hit.Unit.Code} {hit.Unit.FullName}");
-// UA23020030010042079 смт Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.
+var katottg = KatottgDataset.Embedded;  // singleton; immutable; thread-safe
 ```
+
+## Dataset (`KatottgDataset`)
+
+`KatottgDataset.Embedded` loads the snapshot embedded in the package on first access (~12 ms) and
+returns the same instance afterwards. A dataset never changes after it is built, so it can be shared
+across threads without locks.
+
+| Member | What it does |
+|---|---|
+| `Edition` | `Date`, `Source` (file name) and `Sha256` of the official file the data came from |
+| `Count`, `All` | all units in the order of the official file |
+| `Regions` | the 27 roots: 24 regions, AR Crimea, Kyiv and Sevastopol |
+| `Find(code)` | a unit by its full code, or `null` |
+| `TryFind("UA…", out var unit)` | the same, straight from a string |
+| `FindBySignificantPart(code)` | a unit by the first 12 digits, ignoring a lost or wrong tail |
+| `GetByCategory(category)` | all units of one category |
+| `Search(...)` | see [Search](#search) |
+| `Create(edition, records)`, `ToRecords()` | build a dataset from your own records and back |
+| `Save(stream)`, `Load(stream)` | see [Custom data and import](#custom-data-and-import) |
 
 ## Code (`KatottgCode`)
 
@@ -70,7 +59,27 @@ code.IsDescendantOf(KatottgCode.Parse("UA01020000000022387"));  // true — by c
 code.ParentPrefix;      // UA01020030000000000 — only the parent's prefix, without the tail
 ```
 
-If the tail of a code is lost or wrong, search with `FindBySignificantPart(code)`.
+If the tail of a code is lost or wrong, look the unit up with `FindBySignificantPart(code)`.
+
+## Categories (`KatottgCategory`)
+
+| Letter | Value | Typical parent | `DisplayName` |
+|---|---|---|---|
+| `O` | `Region` — region, AR Crimea | — | "Харківська обл.", "АР Крим" |
+| `K` | `SpecialStatusCity` — Kyiv, Sevastopol | — | "м. Київ" |
+| `P` | `District` — district | `O` | "Харківський р-н" |
+| `H` | `Community` — territorial community | `P` | "Харківська громада" |
+| `M` | `City` — city | `H` (Prypiat, Chornobyl — `O`) | "м. Харків" |
+| `T` | `UrbanTypeSettlement` — urban-type settlement | `H` | "смт Андріївка" |
+| `X` | `Settlement` — settlement | `H` | "с-ще Липовець" |
+| `C` | `Village` — village | `H` | "с. Андріївка" |
+| `B` | `CityDistrict` — city district | `M` or `K` | "Шевченківський р-н" |
+| — | `Unknown` — a letter the library does not know yet (future editions) | | |
+
+Extension methods: `IsPopulatedPlace()` (`true` for M, T, X, C, K), `ToUkrainianName()` ("село"),
+`ToShortPrefix()` ("с.", "м.", "смт", "с-ще"), `ToShortSuffix()` ("обл.", "р-н", "громада"),
+`ToLetter()`, and `KatottgCategoryExtensions.FromLetter(c)`, which accepts both the Latin letter and the
+Cyrillic look-alike.
 
 ## Hierarchy (`KatottgUnit`)
 
@@ -93,6 +102,10 @@ district.Children;        // children in the order of the official file
 district.Descendants();   // all descendants, depth-first
 ```
 
+Also: `Name` (as in the official file, trimmed), `FullName` (the whole address, from the unit up to the
+region), `Depth` (0 for a root), `Contains(unit)` and `IsTemporarilyNotInForce` (see
+[Atypical places](#atypical-places-in-the-hierarchy)).
+
 ### The full tree for a found unit — `ToAddress()`
 
 A flat address with the codes of all levels. It is a value (a record) that does not reference the
@@ -110,7 +123,7 @@ a.IsTemporarilyNotInForce;                      // AR Crimea and Sevastopol
 
 ### A tree for display — `KatottgTreeNode`
 
-- **The full tree** is already there in the objects: `katottg.Regions` → `Children` → …; in a UI it is
+- **The full tree** is already in the objects: `katottg.Regions` → `Children` → …; in a UI it is
   convenient to load it lazily.
 - **Part of the tree**, for example search results together with their regions, districts and communities:
 
@@ -126,8 +139,8 @@ void Print(KatottgTreeNode node, int level)
 foreach (var root in roots) Print(root, 0);
 ```
 
-`IsMatch == true` — a unit that was found; `false` — an ancestor added for context. Nodes follow the
-order of the official file, and each unit appears once.
+`IsMatch == true` marks a unit that was found; `false` marks an ancestor added for context. Nodes
+follow the order of the official file, and each unit appears once.
 
 ## Search
 
@@ -157,23 +170,25 @@ IReadOnlyList<KatottgSearchHit> hits = katottg.Search(new KatottgQuery
 });
 ```
 
-Each result is a `KatottgSearchHit(Unit, Score, Kind)`, where `Kind` is `Code`, `Exact`, `Prefix`, or
-`WordPrefix` ("Подільський" → "Могилів-Подільський").
+The free-form search returns a `KatottgSearchResult` with `Hits` (best first) and `Best` (`null` if
+nothing was found). Each hit is a `KatottgSearchHit(Unit, Score, Kind)`, where `Kind` is `Code`,
+`Exact`, `Prefix` or `WordPrefix` ("Подільський" → "Могилів-Подільський"). Compare `Score` only
+within one search.
 
 **Category markers** become a filter: `с.` (village), `село` (village), `м.` (city), `місто` (city),
 `смт` (urban-type settlement), `с-ще` (settlement), `селище` (settlement), `р-н` (district), `район`
 (district), `обл.` (region), `область` (region), `громада` (community), `ТГ` / `ОТГ` (territorial
 community), and "… міська/сільська/селищна територіальна громада" (city/rural/settlement territorial
 community). If nothing is found with the filter, the search is repeated without it: addresses often
-state the category inaccurately. `с-ще` also covers urban-type settlements (the urban-type settlement
-category is being abolished).
+state the category inaccurately. `с-ще` also covers urban-type settlements, because that category is
+being abolished.
 
 **Normalization** (`UkrUtils.Katottg.Search.KatottgNormalizer`): lower case; Latin look-alikes inside
-Cyrillic words ("Вiйтовецька" with a Latin i); apostrophes `' ’ ʼ ` ‘`; hyphens and periods; `ґ→г`,
+Cyrillic words ("Вiйтовецька" with a Latin i); apostrophes ``' ’ ʼ ` ‘``; hyphens and periods; `ґ→г`,
 and `ё/ы/э/ъ` from the Russian layout.
 
-Fuzzy search tolerant of typos and Latin transliteration (`Kyiv`) are not available yet: they are
-stages 7–8 of the plan.
+Fuzzy search that tolerates typos and search in Latin transliteration (`Kyiv`) are not available yet;
+see the [roadmap](https://ukrutils.github.io/Katottg/roadmap).
 
 ## Storing in a database
 
@@ -207,7 +222,7 @@ reports. It is derived data and can be recomputed from the code.
 **Between editions** a code may disappear: when a unit is moved to another community, the ministry
 usually assigns a new code. Store the edition date alongside (`katottg.Edition.Date`) and, after
 updating the package, check that `Find(code)` does not return `null`. Edition comparison and
-code-replacement hints (`KatottgDiff`) are planned for stage 9.
+code-replacement hints (`KatottgDiff`) are on the [roadmap](https://ukrutils.github.io/Katottg/roadmap).
 
 **Don't do this:**
 
@@ -241,7 +256,8 @@ using (var file = File.OpenRead("katottg.bin.gz")) dataset = KatottgDataset.Load
 ```
 
 `ImportReport` contains errors (the row is skipped), warnings (the row was imported but looks
-suspicious), and informational messages (trimmed whitespace, service rows).
+suspicious) and info issues (trimmed whitespace, skipped service rows); the "Примітка" rows go to `Notes`. If the file name carries no date, pass it in
+`KatottgImportOptions.EditionDate`; otherwise the parser falls back to `docProps/core.xml`.
 
 ## CLI
 
@@ -261,44 +277,11 @@ katottg import OfficialData/katottg-26-11-03.xlsx --verbose
 katottg build-snapshot OfficialData -o Source/UkrUtils.Katottg/Data/katottg.bin.gz
 ```
 
+`search` also takes `--limit <n>` and `--snapshot <path>`. `import` and `build-snapshot` accept a file
+or a directory; for a directory they take the newest `katottg-YY-MM-DD.xlsx` by name.
+
 ## Performance
 
 The dataset takes ~6.5 MB of managed memory, and the name index another ~1.4 MB; the index is built on
 the first search (~26 ms). Typical timings: `Find` ~4 ns; exact search ~1 µs; prefix ~4 µs; a
 three-part address ~16 µs. Benchmarks live in `Tests/UkrUtils.Katottg.Benchmarks`.
-
-## AI agents in your project
-
-Agents (Claude Code, Copilot, Cursor, Codex…) read the `AGENTS.md` / `CLAUDE.md` of **your**
-repository, but not the documentation inside NuGet packages. So that an agent works with KATOTTG
-correctly, add this to your `AGENTS.md`:
-
-```markdown
-## KATOTTG (UkrUtils.Katottg)
-
-For codes of Ukraine's administrative-territorial units, use the NuGet package UkrUtils.Katottg.
-Before writing code with it, read the agent guide:
-- locally: ~/.nuget/packages/ukrutils.katottg/<version>/AgentGuide.md (the version is in the .csproj;
-  the packaged guide is in Ukrainian);
-- online (English): https://github.com/UkrUtils/Katottg/blob/main/Docs/en/AgentGuide.md
-
-Key points: the key is the code (UA + 17 digits), not the name; store only the lowest-level code in
-the DB; pass addresses from text to KatottgDataset.Embedded.Search(...); hierarchy levels can be null.
-```
-
-The guide sits in the root of every package (`AgentGuide.md`, in Ukrainian), so an agent can read it
-offline, for exactly the installed version. The key rules are duplicated in the XML documentation of
-the types (`KatottgDataset`, `KatottgCode`), which agents see through IntelliSense or decompilation.
-
-## Data
-
-The data comes from the official Codifier approved by Order No. 290 of the Ministry of Regional
-Development of 26.11.2020 (as amended by Order No. 3 of 12.01.2021). The source is the website of the
-Ministry for Development of Communities and Territories of Ukraine. The original xlsx files are kept in
-[`OfficialData/`](https://github.com/UkrUtils/Katottg/tree/main/OfficialData). The library code is
-distributed under the MIT license ([LICENSE](https://github.com/UkrUtils/Katottg/blob/main/LICENSE)).
-
-## Development
-
-How to build, test and update the data is described in [AGENTS.md](https://github.com/UkrUtils/Katottg/blob/main/AGENTS.md) (in Ukrainian). The roadmap is in
-[Docs/ImplementationPlan.md](https://github.com/UkrUtils/Katottg/blob/main/Docs/ImplementationPlan.md) (in Ukrainian).

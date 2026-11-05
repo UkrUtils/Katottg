@@ -2,14 +2,14 @@
 import { data } from './releases.data.js'
 import { formatReleaseDate } from '../lib/releases.js'
 
-const props = defineProps({ lang: { type: String, default: 'uk' } })
+const props = defineProps({ lang: { type: String, default: 'en' } })
 
 // Тексти інтерфейсу.
 const dict = {
   uk: { empty: 'Релізів ще немає.', prerelease: 'prerelease', github: 'GitHub Release' },
   en: { empty: 'No releases yet.', prerelease: 'prerelease', github: 'GitHub Release' },
 }
-const t = dict[props.lang] ?? dict.uk
+const t = dict[props.lang] ?? dict.en
 </script>
 
 <template>

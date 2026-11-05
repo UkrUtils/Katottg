@@ -2,31 +2,31 @@
 layout: home
 hero:
   name: UkrUtils.Katottg
-  text: Кодифікатор КАТОТТГ для .NET
-  tagline: Бібліотека .NET для роботи з Кодифікатором адміністративно-територіальних одиниць та територій територіальних громад (КАТОТТГ).
+  text: The KATOTTG codifier for .NET
+  tagline: A .NET library for the Codifier of administrative-territorial units and territories of territorial communities (KATOTTG).
   actions:
     - theme: brand
-      text: Документація
-      link: /guide
+      text: Docs
+      link: /overview
     - theme: alt
       text: GitHub
       link: https://github.com/UkrUtils/Katottg
     - theme: alt
-      text: Підтримати
+      text: Donate
       link: /donate
 features:
-  - title: Вбудовані дані
-    details: Офіційні дані вже в пакеті (~360 КБ, 31 751 запис), мережа не потрібна.
-  - title: Без залежностей
-    details: Ядро не має залежностей, а набір даних незмінний і безпечний для багатьох потоків.
-  - title: AOT і trimming
-    details: Без рефлексії, дружня до Native AOT і trimming.
-  - title: Пошук за назвою й адресою
-    details: Вільний рядок, код або адреса через коми; маркери категорій, префікси, нормалізація.
-  - title: Ієрархія
-    details: Область → район → громада → населений пункт → район у місті; предки, діти, повна адреса.
-  - title: CLI katottg
-    details: Інструмент командного рядка — import, build-snapshot і search.
+  - title: Embedded data
+    details: The official data ships in the package (~360 KB, 31,751 records); no network needed.
+  - title: No dependencies
+    details: The core has no dependencies; the dataset is immutable and thread-safe.
+  - title: AOT and trimming
+    details: No reflection; friendly to Native AOT and trimming.
+  - title: Search by name and address
+    details: Free-form string, code or comma-separated address; category markers, prefixes, normalization.
+  - title: Hierarchy
+    details: Region → district → community → settlement → city district; ancestors, children, full address.
+  - title: The katottg CLI
+    details: A command-line tool — import, build-snapshot and search.
 ---
 
 ```bash
@@ -36,14 +36,14 @@ dotnet add package UkrUtils.Katottg
 ```csharp
 using UkrUtils.Katottg;
 
-var katottg = KatottgDataset.Embedded;          // ліниво завантажується один раз (~12 мс)
+var katottg = KatottgDataset.Embedded;          // lazily loaded once (~12 ms)
 
-// За кодом
+// By code
 var unit = katottg.Find(KatottgCode.Parse("UA01020010010075540"));
 Console.WriteLine(unit!.FullName);
 // с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим
 
-// За назвою або адресою
+// By name or address
 var hit = katottg.Search("смт Андріївка, Бердянський р-н, Запорізька обл.").Best!;
 Console.WriteLine($"{hit.Unit.Code} {hit.Unit.FullName}");
 // UA23020030010042079 смт Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.

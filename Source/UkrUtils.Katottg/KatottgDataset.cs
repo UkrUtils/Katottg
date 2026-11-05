@@ -19,7 +19,7 @@ namespace UkrUtils.Katottg;
 /// <item>Hierarchy levels may be missing (Kyiv, Sevastopol, Prypiat): check for <c>null</c>.</item>
 /// </list>
 /// Guide for AI agents: <c>AgentGuide.md</c> in the package root or
-/// https://github.com/UkrUtils/Katottg/blob/main/Docs/en/AgentGuide.md
+/// https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
 /// </remarks>
 public sealed partial class KatottgDataset
 {

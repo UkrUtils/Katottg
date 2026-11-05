@@ -7,7 +7,7 @@
         <PackageVersion>1.0.1</PackageVersion>
 
         <!-- The UTC moment the version above was set, ISO 8601. Moves with every version bump — any
-             segment, revision included — and never on its own; see Docs/Contributing/Conventions.md. -->
+             segment, revision included — and never on its own; see Docs/Contributing.md, "Versioning". -->
         <VersionDate>2026-11-05T12:01:31Z</VersionDate>
 
         <Authors>Eugene Yakush</Authors>
