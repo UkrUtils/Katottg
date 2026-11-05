@@ -35,7 +35,7 @@ public sealed partial class KatottgDataset
             var hits = unit is not null && Accepts(unit, options.Categories, options.Within)
                 ? [new KatottgSearchHit(unit, 2.0, MatchKind.Code)]
                 : Array.Empty<KatottgSearchHit>();
-            return new KatottgSearchResult(text, hits);
+            return new KatottgSearchResult(text, hits.AsReadOnly());
         }
 
         var parts = text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

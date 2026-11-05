@@ -13,6 +13,11 @@
         <Authors>Eugene Yakush</Authors>
         <Company>UkrUtils</Company>
 
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/UkrUtils/Katottg</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/UkrUtils/Katottg</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -23,5 +28,12 @@
          own GetAssemblyAttributes — without a custom attribute type to depend on. -->
     <ItemGroup>
         <AssemblyMetadata Include="VersionDate" Value="$(VersionDate)" />
+    </ItemGroup>
+
+    <!-- README і посібник для AI-агентів їдуть у кожен пакет: NuGet показує README, а агенти
+         знаходять AgentGuide.md поруч у кеші пакетів. -->
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)..\Docs\AgentGuide.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 </Project>

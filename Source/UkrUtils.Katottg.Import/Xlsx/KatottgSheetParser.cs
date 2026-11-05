@@ -63,8 +63,8 @@ public static partial class KatottgSheetParser
                 "Edition date not found in file name (katottg-YY-MM-DD) nor in docProps/core.xml."));
 
         var edition = new KatottgEdition(date ?? default, options.Source ?? name, sha256);
-        var report = new ImportReport(state.Issues, state.HeaderRow, state.Records.Count, state.SkippedRows, state.EmptyRows, state.Notes);
-        return new KatottgImportResult(edition, state.Records, report);
+        var report = new ImportReport(state.Issues.AsReadOnly(), state.HeaderRow, state.Records.Count, state.SkippedRows, state.EmptyRows, state.Notes.AsReadOnly());
+        return new KatottgImportResult(edition, state.Records.AsReadOnly(), report);
     }
 
     private static string? FileNameOf(string? path)
