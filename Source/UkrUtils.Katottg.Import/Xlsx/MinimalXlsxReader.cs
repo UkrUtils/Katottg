@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace UkrUtils.Katottg.Import.Xlsx;
 
-/// <summary>Рядок аркуша: номер (з 1) і значення комірок за індексом колонки (A = 0).</summary>
+/// <summary>Sheet row: number (from 1) and cell values by column index (A = 0).</summary>
 internal readonly record struct XlsxRow(int Number, IReadOnlyList<string?> Cells)
 {
     public string? this[int column] => column >= 0 && column < Cells.Count ? Cells[column] : null;
@@ -14,8 +14,8 @@ internal readonly record struct XlsxRow(int Number, IReadOnlyList<string?> Cells
 }
 
 /// <summary>
-/// Мінімальний потоковий читач xlsx (OOXML = zip з XML) без сторонніх залежностей.
-/// Читає лише значення комірок першого аркуша; стилі, формули та типи чисел ігнорує.
+/// Minimal streaming xlsx reader (OOXML = zip with XML) with no third-party dependencies.
+/// Reads only the cell values of the first sheet; styles, formulas, and number types are ignored.
 /// </summary>
 internal sealed class MinimalXlsxReader : IDisposable
 {
@@ -34,12 +34,12 @@ internal sealed class MinimalXlsxReader : IDisposable
 
     private readonly ZipArchive _zip;
 
-    /// <exception cref="InvalidDataException">Потік не є zip-архівом.</exception>
+    /// <exception cref="InvalidDataException">The stream is not a zip archive.</exception>
     public MinimalXlsxReader(Stream stream) => _zip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
 
     public void Dispose() => _zip.Dispose();
 
-    /// <summary>Значення <c>dcterms:modified</c> з <c>docProps/core.xml</c>, якщо є.</summary>
+    /// <summary>The <c>dcterms:modified</c> value from <c>docProps/core.xml</c>, if present.</summary>
     public string? ReadCoreModified()
     {
         var entry = FindEntry("docProps/core.xml");
@@ -54,8 +54,8 @@ internal sealed class MinimalXlsxReader : IDisposable
         return null;
     }
 
-    /// <summary>Потоково читає рядки першого аркуша книги.</summary>
-    /// <exception cref="InvalidDataException">У книзі немає аркушів або бракує обов’язкових частин.</exception>
+    /// <summary>Reads the rows of the workbook's first sheet as a stream.</summary>
+    /// <exception cref="InvalidDataException">The workbook has no sheets or required parts are missing.</exception>
     public IEnumerable<XlsxRow> ReadFirstSheet()
     {
         var workbookPath = FindOfficeDocumentPath() ?? "xl/workbook.xml";
@@ -153,7 +153,7 @@ internal sealed class MinimalXlsxReader : IDisposable
         }
     }
 
-    /// <summary>Склеює всі <c>&lt;t&gt;</c> поточного елемента (<c>si</c> або <c>is</c>), пропускаючи фонетичні блоки.</summary>
+    /// <summary>Concatenates all <c>&lt;t&gt;</c> of the current element (<c>si</c> or <c>is</c>), skipping phonetic blocks.</summary>
     private static string ReadRichText(XmlReader reader)
     {
         var sb = new StringBuilder();
@@ -245,7 +245,7 @@ internal sealed class MinimalXlsxReader : IDisposable
         return slash < 0 ? $"_rels/{partPath}.rels" : $"{partPath[..slash]}/_rels/{partPath[(slash + 1)..]}.rels";
     }
 
-    /// <summary>Шлях частини відносно частини-джерела, як у OPC: абсолютний (<c>/xl/...</c>) або відносний з <c>..</c>.</summary>
+    /// <summary>Path of a part relative to the source part, as in OPC: absolute (<c>/xl/...</c>) or relative with <c>..</c>.</summary>
     internal static string ResolvePath(string sourcePartPath, string target)
     {
         target = target.Replace('\\', '/');
@@ -269,7 +269,7 @@ internal sealed class MinimalXlsxReader : IDisposable
         return string.Join('/', segments);
     }
 
-    /// <summary>Індекс колонки з посилання на комірку: <c>A1</c> → 0, <c>AB12</c> → 27.</summary>
+    /// <summary>Column index from a cell reference: <c>A1</c> → 0, <c>AB12</c> → 27.</summary>
     internal static int ColumnIndex(string reference)
     {
         var index = 0;
