@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/SlnTargetsAndProps/">
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="../Tests/UkrUtils.Katottg.Benchmarks/UkrUtils.Katottg.Benchmarks.csproj" />
+    <Project Path="../Tests/UkrUtils.Katottg.Tests/UkrUtils.Katottg.Tests.csproj" />
+  </Folder>
+  <Project Path="UkrUtils.Katottg.Import/UkrUtils.Katottg.Import.csproj" />
+  <Project Path="UkrUtils.Katottg.Tool/UkrUtils.Katottg.Tool.csproj" />
+  <Project Path="UkrUtils.Katottg/UkrUtils.Katottg.csproj" />
+</Solution>
