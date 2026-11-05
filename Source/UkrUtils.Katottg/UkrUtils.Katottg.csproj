@@ -1,9 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <RootNamespace>UkrUtils.Katottg</RootNamespace>
+        <IsAotCompatible>true</IsAotCompatible>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <PackageId>UkrUtils.Katottg</PackageId>
+        <Description>Кодифікатор адміністративно-територіальних одиниць та територій територіальних громад (КАТОТТГ): пошук, ієрархія, валідація кодів. Містить вбудований знімок офіційних даних.</Description>
+        <PackageTags>katottg;ukraine;codifier;кодифікатор;катоттг</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
+
+    <!-- Знімок генерує `katottg build-snapshot OfficialData -o Source/UkrUtils.Katottg/Data/katottg.bin.gz`.
+         WithCulture="false": інакше MSBuild сприймає ".bin" як культуру (мова біні) і кладе ресурс у сателітну збірку. -->
+    <ItemGroup>
+        <EmbeddedResource Include="Data\katottg.bin.gz" LogicalName="UkrUtils.Katottg.Data.katottg.bin.gz" WithCulture="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="UkrUtils.Katottg.Tests" />
+        <InternalsVisibleTo Include="UkrUtils.Katottg.Benchmarks" />
+    </ItemGroup>
 
 </Project>

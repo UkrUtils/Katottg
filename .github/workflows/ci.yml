@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, 'dev/**' ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore Source/UkrUtils.Katottg.slnx
+
+      - name: Build
+        run: dotnet build Source/UkrUtils.Katottg.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Source/UkrUtils.Katottg.slnx --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack Source/UkrUtils.Katottg.slnx --configuration Release --no-build --output artifacts/packages
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/packages/*.nupkg

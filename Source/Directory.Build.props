@@ -1,17 +1,22 @@
 <Project>
     <PropertyGroup>
         <AssemblyProduct>UkrUtils.Katottg</AssemblyProduct>
-        <FileVersion>1.0.0.1</FileVersion>
-        <AssemblyVersion>1.0.0.1</AssemblyVersion>
-        <InformationalVersion>1.0.0.1</InformationalVersion>
-        <PackageVersion>1.0.0</PackageVersion>
+        <FileVersion>1.0.1.2</FileVersion>
+        <AssemblyVersion>1.0.1.2</AssemblyVersion>
+        <InformationalVersion>1.0.1.2</InformationalVersion>
+        <PackageVersion>1.0.1</PackageVersion>
 
         <!-- The UTC moment the version above was set, ISO 8601. Moves with every version bump — any
              segment, revision included — and never on its own; see Docs/Contributing/Conventions.md. -->
-        <VersionDate>2026-11-03T14:24:31Z</VersionDate>
+        <VersionDate>2026-11-05T12:01:31Z</VersionDate>
 
         <Authors>Eugene Yakush</Authors>
         <Company>UkrUtils</Company>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/UkrUtils/Katottg</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/UkrUtils/Katottg</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
 
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -23,5 +28,12 @@
          own GetAssemblyAttributes — without a custom attribute type to depend on. -->
     <ItemGroup>
         <AssemblyMetadata Include="VersionDate" Value="$(VersionDate)" />
+    </ItemGroup>
+
+    <!-- README і посібник для AI-агентів їдуть у кожен пакет: NuGet показує README, а агенти
+         знаходять AgentGuide.md поруч у кеші пакетів. -->
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)..\Docs\AgentGuide.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 </Project>
