@@ -282,6 +282,41 @@ public class KatottgSheetParserTests
     }
 
     [Fact]
+    public void CyrillicUaPrefixInFirstLevel_IsData()
+    {
+        var result = ParseRows(Region, ["УА05000000000010236", "UA05020000000026686", null, null, null, "P", "Вінницький"]);
+
+        Assert.Equal(2, result.Records.Count);
+        Assert.Equal(KatottgCode.Parse("UA05000000000010236"), Get(result, "UA05020000000026686").ParentCode);
+        Assert.False(result.Report.HasErrors);
+    }
+
+    [Fact]
+    public void CodesWithEmptyFirstLevel_IsError_NotSilentlySkipped()
+    {
+        var result = ParseRows(Region, [null, "UA05020000000026686", null, null, null, "P", "Вінницький"]);
+
+        Assert.Single(result.Records);
+        Assert.Equal(ImportIssueKind.LevelGap, Assert.Single(result.Report.Errors).Kind);
+    }
+
+    [Fact]
+    public void MalformedSheetXml_ThrowsInvalidData()
+    {
+        var bytes = FixtureData.CreateOfficialLike().Build();
+        using var ms = new MemoryStream();
+        ms.Write(bytes);
+        using (var zip = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Update, leaveOpen: true))
+        {
+            zip.GetEntry("xl/worksheets/sheet1.xml")!.Delete();
+            using var writer = new StreamWriter(zip.CreateEntry("xl/worksheets/sheet1.xml").Open());
+            writer.Write("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData><row r=\"1\"><c");
+        }
+        ms.Position = 0;
+        Assert.Throws<InvalidDataException>(() => KatottgSheetParser.Parse(ms, "x.xlsx"));
+    }
+
+    [Fact]
     public void NotAZip_Throws()
         => Assert.Throws<InvalidDataException>(() => KatottgSheetParser.Parse(new MemoryStream([1, 2, 3]), "x.xlsx"));
 }

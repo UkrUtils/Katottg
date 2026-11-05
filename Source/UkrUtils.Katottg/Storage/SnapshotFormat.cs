@@ -101,6 +101,11 @@ internal static class SnapshotFormat
         {
             throw new InvalidDataException("Snapshot is truncated.", ex);
         }
+        catch (Exception ex) when (ex is DecoderFallbackException or FormatException)
+        {
+            // Невалідний UTF-8 у рядку або зіпсований 7-бітний префікс довжини.
+            throw new InvalidDataException("Snapshot contains a malformed string.", ex);
+        }
     }
 
     private static KatottgDataset ReadRaw(Stream stream)

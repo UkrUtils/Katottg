@@ -110,6 +110,24 @@ public class CliTests : IDisposable
     public void Search_BadLimit() => Assert.Equal(2, Run("search", "Київ", "--limit", "0").Exit);
 
     [Fact]
+    public void Search_CorruptSnapshot_ExitsWithError()
+    {
+        // Нестиснутий знімок фікстури з невалідним UTF-8 у першій назві
+        var gz = Path.Combine(_dir, "snap.bin.gz");
+        Assert.Equal(0, Run("build-snapshot", WriteFixture(), "-o", gz).Exit);
+        using var ms = new MemoryStream();
+        using (var gzip = new System.IO.Compression.GZipStream(File.OpenRead(gz), System.IO.Compression.CompressionMode.Decompress))
+            gzip.CopyTo(ms);
+        var raw = ms.ToArray();
+        raw[42 + 22 + 8 + 1] = 0xFF;
+        var path = Path.Combine(_dir, "corrupt.bin");
+        File.WriteAllBytes(path, raw);
+        var (exit, _, err) = Run("search", "Київ", "--snapshot", path);
+        Assert.Equal(1, exit);
+        Assert.Contains("error", err);
+    }
+
+    [Fact]
     public void BuildSnapshot_MissingFile_Fails()
     {
         var (exit, _, err) = Run("build-snapshot", Path.Combine(_dir, "nope.xlsx"));

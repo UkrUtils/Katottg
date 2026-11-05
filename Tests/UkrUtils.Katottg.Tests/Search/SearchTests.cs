@@ -220,7 +220,6 @@ public class SearchTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(",,,")]
-    [InlineData("м.")]
     [InlineData("Ыыыыы")]
     public void EmptyOrUnknown_GivesNoHits(string text) => Assert.Empty(Data.Search(text).Hits);
 

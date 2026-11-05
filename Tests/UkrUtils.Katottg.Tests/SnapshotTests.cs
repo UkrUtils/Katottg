@@ -105,8 +105,19 @@ public class SnapshotTests
     [Fact]
     public void Embedded_FileMatchesFreshBuild()
     {
-        // Знімок у репозиторії має бути побайтово таким, як його будує build-snapshot.
-        Assert.Equal(Save(FixtureDataset.Official), File.ReadAllBytes(TestPaths.EmbeddedSnapshot));
+        // Вміст знімка в репозиторії має бути побайтово таким, як його будує build-snapshot.
+        // Порівнюємо розпаковані дані: байти gzip можуть змінитися з новою версією zlib.
+        Assert.Equal(Decompress(Save(FixtureDataset.Official)), Decompress(File.ReadAllBytes(TestPaths.EmbeddedSnapshot)));
+    }
+
+    [Fact]
+    public void Load_InvalidUtf8_ThrowsInvalidData()
+    {
+        var raw = Decompress(Save(FixtureDataset.Value));
+        // magic(4) + version(2) + date(4) + sha(32) + source(1 + 21) + count(4) + stringCount(4) + довжина першого рядка(1)
+        Assert.Equal(21, raw[42]);
+        raw[42 + 22 + 8 + 1] = 0xFF;
+        Assert.Throws<InvalidDataException>(() => KatottgDataset.Load(new MemoryStream(raw)));
     }
 
     private sealed class NonSeekableStream(byte[] data) : MemoryStream(data)

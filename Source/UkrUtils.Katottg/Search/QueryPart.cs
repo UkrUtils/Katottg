@@ -1,9 +1,17 @@
 namespace UkrUtils.Katottg.Search;
 
-/// <summary>Частина запиту після нормалізації: текст без маркерів і категорії, які задав маркер.</summary>
+/// <summary>
+/// Частина запиту після нормалізації: текст без маркерів і категорії, які задав маркер
+/// (перша — основна, наприклад для «с-ще» основна — селище, а СМТ лише допускається).
+/// </summary>
 internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? Categories)
 {
     public bool IsEmpty => Text.Length == 0;
+
+    /// <summary>Чи задав категорії маркер у тексті (а не роль поля). Такий контекст обов’язковий.</summary>
+    public bool IsMarked => Categories is not null;
+
+    public KatottgCategory? PrimaryCategory => Categories is { Length: > 0 } c ? c[0] : null;
 
     private static readonly KatottgCategory[] s_cities = [KatottgCategory.City, KatottgCategory.SpecialStatusCity];
     private static readonly KatottgCategory[] s_village = [KatottgCategory.Village];
@@ -93,8 +101,14 @@ internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? 
             categories = s_community;
         }
 
-        // Частина, що складається лише з маркера («м.»), нічого не шукає.
-        var text = start < end ? string.Join(' ', tokens[start..end]) : "";
+        // Якщо частина складається лише з маркера («Селище», «С» під час набору) — це назва, а не маркер.
+        if (start >= end)
+        {
+            start = 0;
+            end = tokens.Length;
+            categories = null;
+        }
+        var text = string.Join(' ', tokens[start..end]);
         return new QueryPart(text, s_aliases.GetValueOrDefault(text), categories);
     }
 

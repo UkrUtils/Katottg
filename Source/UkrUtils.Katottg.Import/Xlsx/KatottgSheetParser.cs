@@ -43,12 +43,21 @@ public static partial class KatottgSheetParser
 
         using var reader = new MinimalXlsxReader(new MemoryStream(bytes, writable: false));
         var state = new SheetState();
-        foreach (var row in reader.ReadFirstSheet())
-            state.Process(row);
+        string? coreModified;
+        try
+        {
+            foreach (var row in reader.ReadFirstSheet())
+                state.Process(row);
+            coreModified = reader.ReadCoreModified();
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            throw new InvalidDataException($"Malformed XML in xlsx: {ex.Message}", ex);
+        }
         state.Finish();
 
         var name = FileNameOf(fileName);
-        var date = options.EditionDate ?? DateFromFileName(name) ?? DateFromCoreProperties(reader.ReadCoreModified());
+        var date = options.EditionDate ?? DateFromFileName(name) ?? DateFromCoreProperties(coreModified);
         if (date is null)
             state.Issues.Add(new ImportIssue(ImportSeverity.Warning, ImportIssueKind.EditionDateUnknown, 0, null,
                 "Edition date not found in file name (katottg-YY-MM-DD) nor in docProps/core.xml."));
@@ -123,14 +132,22 @@ public static partial class KatottgSheetParser
                 return;
             }
 
-            var first = row[_levelColumns[0]]?.Trim();
-            if (first is null || !first.StartsWith("UA", StringComparison.OrdinalIgnoreCase))
+            // Рядок даних — будь-який рядок, де хоч одна колонка рівня схожа на код. Так рядок
+            // із пошкодженим першим рівнем дає помилку, а не тихо пропадає як службовий.
+            if (!_levelColumns.Any(c => LooksLikeCode(row[c])))
             {
                 Skip(row);
                 return;
             }
 
             ProcessData(row);
+        }
+
+        private static bool LooksLikeCode(string? cell)
+        {
+            var text = cell.AsSpan().Trim();
+            return text.Length >= 2 && (KatottgCode.TryParse(text, out _) ||
+                (text[0] is 'U' or 'u' or 'У' or 'у' && text[1] is 'A' or 'a' or 'А' or 'а'));
         }
 
         public void Finish()
@@ -198,6 +215,12 @@ public static partial class KatottgSheetParser
 
         private void ProcessData(XlsxRow row)
         {
+            if (string.IsNullOrWhiteSpace(row[_levelColumns[0]]))
+            {
+                Error(row, ImportIssueKind.LevelGap, null, "First level is empty, but other levels contain codes.");
+                return;
+            }
+
             _levels.Clear();
             bool seenEmpty = false, gap = false;
             foreach (var column in _levelColumns)
