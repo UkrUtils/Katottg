@@ -28,4 +28,10 @@ public sealed class KatottgImportResult
 
     /// <summary>Звіт про імпорт.</summary>
     public ImportReport Report { get; }
+
+    /// <summary>
+    /// Будує <see cref="KatottgDataset"/> з імпортованих записів. Перед цим перевірте
+    /// <see cref="ImportReport.HasErrors"/>: рядки з помилками в набір не потрапляють.
+    /// </summary>
+    public KatottgDataset CreateDataset() => KatottgDataset.Create(Edition, Records);
 }
