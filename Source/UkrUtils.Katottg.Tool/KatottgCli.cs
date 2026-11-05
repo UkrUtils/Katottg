@@ -112,14 +112,15 @@ internal static class KatottgCli
         }
 
         var query = string.Join(' ', options.Positional);
-        if (dataset.TryFind(query, out var exact) || (KatottgCode.TryParse(query, out var code) && (exact = dataset.FindBySignificantPart(code)) is not null))
+        var result = dataset.Search(query, new KatottgSearchOptions { Limit = limit });
+        if (result.Hits.Count == 0)
         {
-            stdout.WriteLine($"{exact.Code}  {exact.Category.ToLetter()}  {exact.FullName}");
-            return 0;
+            stderr.WriteLine("Nothing found.");
+            return 1;
         }
-
-        stderr.WriteLine("Nothing found.");
-        return 1;
+        foreach (var hit in result.Hits)
+            stdout.WriteLine($"{hit.Unit.Code}  {hit.Unit.Category.ToLetter()}  {hit.Score,4:0.00}  {hit.Kind,-10}  {hit.Unit.FullName}");
+        return 0;
     }
 
     private static bool TryResolveInput(string input, TextWriter stderr, out string path)

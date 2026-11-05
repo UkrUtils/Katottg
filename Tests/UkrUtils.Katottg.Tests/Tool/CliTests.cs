@@ -77,6 +77,39 @@ public class CliTests : IDisposable
     }
 
     [Fact]
+    public void Search_Embedded()
+    {
+        var (exit, output, _) = Run("search", "Кривий", "Ріг", "--limit", "1");
+        Assert.Equal(0, exit);
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Single(lines);
+        Assert.StartsWith("UA12060170010065850", lines[0]);
+        Assert.Contains("м. Кривий Ріг", lines[0]);
+    }
+
+    [Fact]
+    public void Search_ByCode_FromSnapshotFile()
+    {
+        var snapshot = Path.Combine(_dir, "snap.bin.gz");
+        Assert.Equal(0, Run("build-snapshot", WriteFixture(), "-o", snapshot).Exit);
+
+        var (exit, output, _) = Run("search", "UA01020010010000000", "--snapshot", snapshot);
+        Assert.Equal(0, exit);
+        Assert.Contains("с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим", output);
+    }
+
+    [Fact]
+    public void Search_NothingFound()
+    {
+        var (exit, _, err) = Run("search", "Ыыыыы");
+        Assert.Equal(1, exit);
+        Assert.Contains("Nothing found", err);
+    }
+
+    [Fact]
+    public void Search_BadLimit() => Assert.Equal(2, Run("search", "Київ", "--limit", "0").Exit);
+
+    [Fact]
     public void BuildSnapshot_MissingFile_Fails()
     {
         var (exit, _, err) = Run("build-snapshot", Path.Combine(_dir, "nope.xlsx"));
