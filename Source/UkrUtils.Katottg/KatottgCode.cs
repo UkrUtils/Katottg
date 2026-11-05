@@ -89,6 +89,61 @@ public readonly struct KatottgCode
         }
     }
 
+    /// <summary>Кількість значущих цифр до кінця найнижчого ненульового сегмента (0, 2, 4, 7, 10 або 12).</summary>
+    private int HierarchyDigits
+    {
+        get
+        {
+            var significant = SignificantPart;
+            if (significant % 100 != 0) return 12;                    // район у місті
+            if (significant / 100 % 1000 != 0) return 10;             // населений пункт
+            if (significant / 100_000 % 1000 != 0) return 7;          // громада
+            if (significant / 100_000_000 % 100 != 0) return 4;       // район
+            return significant != 0 ? 2 : 0;                          // область
+        }
+    }
+
+    /// <summary>
+    /// Текстовий префікс, з якого починаються коди цього об’єкта і всіх його нащадків:
+    /// <c>UA0102</c> для району, <c>UA0102001</c> для громади. Зручно для SQL:
+    /// <c>WHERE code LIKE 'UA0102%'</c> — сам район і все, що в ньому.
+    /// </summary>
+    /// <remarks>
+    /// Інваріант перевірено на всіх записах офіційного файлу: префікс вибирає рівно піддерево
+    /// об’єкта, включно з нетиповими місцями (Київ, Севастополь, Прип’ять).
+    /// </remarks>
+    public string HierarchyPrefix
+    {
+        get
+        {
+            var digits = HierarchyDigits;
+            Span<char> buffer = stackalloc char[Length];
+            WriteChars(buffer, _value);
+            return buffer[..(2 + digits)].ToString();
+        }
+    }
+
+    /// <summary>
+    /// Чи лежить цей об’єкт усередині <paramref name="ancestor"/> (строго: сам об’єкт — ні).
+    /// Перевіряє лише цифри коду, без набору даних: код починається з <see cref="HierarchyPrefix"/> предка.
+    /// </summary>
+    public bool IsDescendantOf(KatottgCode ancestor)
+    {
+        var digits = ancestor.HierarchyDigits;
+        if (digits == 0 || SignificantPart == ancestor.SignificantPart)
+            return false;
+        var divisor = Pow10(12 - digits);
+        return SignificantPart / divisor == ancestor.SignificantPart / divisor;
+
+        static ulong Pow10(int n)
+        {
+            ulong result = 1;
+            for (var i = 0; i < n; i++)
+                result *= 10;
+            return result;
+        }
+    }
+
     #region Parsing
 
     /// <summary>

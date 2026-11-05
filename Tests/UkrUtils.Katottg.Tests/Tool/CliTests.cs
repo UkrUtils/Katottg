@@ -99,6 +99,18 @@ public class CliTests : IDisposable
     }
 
     [Fact]
+    public void Search_Tree()
+    {
+        var (exit, output, _) = Run("search", "Шевченківський р-н, м. Харків", "--tree");
+        Assert.Equal(0, exit);
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.TrimEnd('\r')).ToArray();
+        Assert.Equal(5, lines.Length);
+        Assert.StartsWith("Харківська обл.  [UA63", lines[0]);
+        Assert.StartsWith("      м. Харків", lines[3]);
+        Assert.StartsWith("        * Шевченківський р-н  [UA63120270010948820]", lines[4]);
+    }
+
+    [Fact]
     public void Search_NothingFound()
     {
         var (exit, _, err) = Run("search", "Ыыыыы");

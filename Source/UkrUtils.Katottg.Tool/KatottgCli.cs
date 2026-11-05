@@ -12,8 +12,9 @@ internal static class KatottgCli
           katottg build-snapshot <file.xlsx|dir> [-o|--output <path>]
               Build a binary snapshot (default: katottg.bin.gz). A directory means
               the latest katottg-*.xlsx in it (by file name).
-          katottg search <text> [--snapshot <path>] [--limit <n>]
-              Search the embedded (or given) snapshot by name or code.
+          katottg search <text> [--snapshot <path>] [--limit <n>] [--tree]
+              Search the embedded (or given) snapshot by name, address or code;
+              --tree prints the hits with their regions, districts and communities.
         """;
 
     public static int Run(string[] args, TextWriter stdout, TextWriter stderr)
@@ -92,7 +93,7 @@ internal static class KatottgCli
 
     private static int Search(string[] args, TextWriter stdout, TextWriter stderr)
     {
-        var options = Options.Parse(args, flags: [], values: ["--snapshot", "--limit"]);
+        var options = Options.Parse(args, flags: ["--tree"], values: ["--snapshot", "--limit"]);
         if (options.Error is not null || options.Positional.Count == 0)
             return UsageError(stderr, options.Error ?? "search expects a query.");
 
@@ -118,9 +119,22 @@ internal static class KatottgCli
             stderr.WriteLine("Nothing found.");
             return 1;
         }
+        if (options.Has("--tree"))
+        {
+            foreach (var root in result.ToTree())
+                PrintTree(root, 0, stdout);
+            return 0;
+        }
         foreach (var hit in result.Hits)
             stdout.WriteLine($"{hit.Unit.Code}  {hit.Unit.Category.ToLetter()}  {hit.Score,4:0.00}  {hit.Kind,-10}  {hit.Unit.FullName}");
         return 0;
+    }
+
+    private static void PrintTree(KatottgTreeNode node, int level, TextWriter stdout)
+    {
+        stdout.WriteLine($"{new string(' ', level * 2)}{(node.IsMatch ? "* " : "")}{node.Unit.DisplayName}  [{node.Unit.Code}]");
+        foreach (var child in node.Children)
+            PrintTree(child, level + 1, stdout);
     }
 
     private static bool TryResolveInput(string input, TextWriter stderr, out string path)

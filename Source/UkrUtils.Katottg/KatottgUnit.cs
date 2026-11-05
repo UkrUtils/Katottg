@@ -22,6 +22,7 @@ public sealed class KatottgUnit
         District = category == KatottgCategory.District ? this : parent?.District;
         Community = category == KatottgCategory.Community ? this : parent?.Community;
         PopulatedPlace = category.IsPopulatedPlace() ? this : parent?.PopulatedPlace;
+        CityDistrict = category == KatottgCategory.CityDistrict ? this : null;
     }
 
     /// <summary>Позиція в <see cref="KatottgDataset.All"/>.</summary>
@@ -59,6 +60,40 @@ public sealed class KatottgUnit
     /// <c>null</c> для областей, районів і громад.
     /// </summary>
     public KatottgUnit? PopulatedPlace { get; }
+
+    /// <summary>Район у місті (<c>B</c>): сам об’єкт, якщо це район у місті; інакше <c>null</c>.</summary>
+    public KatottgUnit? CityDistrict { get; }
+
+    /// <summary>Шлях від кореня (області) до самого об’єкта включно. Новий масив при кожному зверненні.</summary>
+    public IReadOnlyList<KatottgUnit> Path
+    {
+        get
+        {
+            var path = new KatottgUnit[Depth + 1];
+            var unit = this;
+            for (var i = Depth; i >= 0; i--, unit = unit.Parent!)
+                path[i] = unit;
+            return path.AsReadOnly();
+        }
+    }
+
+    /// <summary>
+    /// Пласка адреса з кодами всіх рівнів: область, район, громада, населений пункт, район у місті.
+    /// Не посилається на набір даних, тож її зручно серіалізувати або повертати з API.
+    /// </summary>
+    public KatottgAddress ToAddress() => new()
+    {
+        Code = Code,
+        Category = Category,
+        Name = Name,
+        FullName = FullName,
+        IsTemporarilyNotInForce = IsTemporarilyNotInForce,
+        Region = KatottgAddressPart.From(Region),
+        District = District is null ? null : KatottgAddressPart.From(District),
+        Community = Community is null ? null : KatottgAddressPart.From(Community),
+        PopulatedPlace = PopulatedPlace is null ? null : KatottgAddressPart.From(PopulatedPlace),
+        CityDistrict = CityDistrict is null ? null : KatottgAddressPart.From(CityDistrict),
+    };
 
     /// <summary>
     /// Коди АР Крим і Севастополя набирають чинності з моменту повернення цих територій під

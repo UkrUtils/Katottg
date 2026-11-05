@@ -39,6 +39,12 @@ public sealed class KatottgSearchResult
 
     /// <summary>Найкращий збіг або <c>null</c>.</summary>
     public KatottgSearchHit? Best => Hits.Count > 0 ? Hits[0] : null;
+
+    /// <summary>
+    /// Результати у вигляді дерева: знайдені об’єкти (<see cref="KatottgTreeNode.IsMatch"/>) разом
+    /// з областями, районами й громадами, у яких вони лежать.
+    /// </summary>
+    public IReadOnlyList<KatottgTreeNode> ToTree() => KatottgTreeNode.Build(Hits.Select(h => h.Unit));
 }
 
 /// <summary>Параметри пошуку за вільним рядком.</summary>
