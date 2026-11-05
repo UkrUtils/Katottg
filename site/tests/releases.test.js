@@ -64,6 +64,8 @@ test('loadReleases sends token and headers', async () => {
   await loadReleases({ fetchImpl: fake(200, [], calls), env: { GITHUB_TOKEN: 't' }, warn() {}, repo: REPO, packageIds: IDS })
   assert.equal(calls[0].url, 'https://api.github.com/repos/UkrUtils/Katottg/releases?per_page=100')
   assert.equal(calls[0].init.headers.Authorization, 'Bearer t')
+  assert.equal(calls[0].init.headers['User-Agent'], 'UkrUtils.Katottg-site')
+  assert.equal(calls[0].init.headers.Accept, 'application/vnd.github+json')
   const calls2 = []
   await loadReleases({ fetchImpl: fake(200, [], calls2), env: {}, warn() {}, repo: REPO, packageIds: IDS })
   assert.equal('Authorization' in calls2[0].init.headers, false)

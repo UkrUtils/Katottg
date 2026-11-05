@@ -56,7 +56,7 @@ export async function loadReleases({ fetchImpl, env, warn, repo, packageIds }) {
   const headers = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'katottg-site-build',
+    'User-Agent': 'UkrUtils.Katottg-site',
   }
   if (env.GITHUB_TOKEN) headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`
 
