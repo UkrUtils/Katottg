@@ -3,16 +3,18 @@ import { REPO } from './site.config.js'
 
 const GITHUB = `https://github.com/${REPO}`
 
+// VitePress серіалізує функцію editLink.pattern у клієнтський бандл, тому вона має бути
+// самодостатньою: жодних посилань на змінні модуля (вони там undefined).
 // Сторінки із заглушками-@include редагують у справжньому джерелі, а не в заглушці.
-const EDIT_SOURCES: Record<string, string> = {
-  'guide.md': 'README.md',
-  'agents.md': 'Docs/AgentGuide.md',
-  'en/guide.md': 'Docs/en/README.md',
-  'en/agents.md': 'Docs/en/AgentGuide.md',
+const editPattern = ({ filePath }: { filePath: string }) => {
+  const sources: Record<string, string> = {
+    'guide.md': 'README.md',
+    'agents.md': 'Docs/AgentGuide.md',
+    'en/guide.md': 'Docs/en/README.md',
+    'en/agents.md': 'Docs/en/AgentGuide.md',
+  }
+  return `https://github.com/UkrUtils/Katottg/edit/main/${sources[filePath] ?? `site/${filePath}`}`
 }
-
-const editPattern = ({ filePath }: { filePath: string }) =>
-  `${GITHUB}/edit/main/${EDIT_SOURCES[filePath] ?? `site/${filePath}`}`
 
 const nav = (prefix: string, labels: string[]) => [
   { text: labels[0], link: `${prefix}/guide` },
