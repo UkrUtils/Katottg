@@ -6,6 +6,8 @@ A .NET library for working with the **Codifier of Administrative-Territorial Uni
 Territorial Communities (KATOTTG)**: search by name and address, the hierarchy "region → district →
 community → settlement → city district", code validation, and import of the official xlsx file.
 
+Site and documentation: https://ukrutils.github.io/Katottg/
+
 - Works out of the box: the official data is embedded in the package (~360 KB), no network required.
 - No dependencies, AOT- and trimming-friendly. The dataset is immutable and safe to share across threads.
 - Embedded edition: **03.11.2026** (`KatottgDataset.Embedded.Edition`), 31,751 records.

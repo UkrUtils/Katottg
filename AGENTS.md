@@ -22,6 +22,21 @@ dotnet pack Source/UkrUtils.Katottg.slnx -c Release -o artifacts/packages
 dotnet run -c Release --project Tests/UkrUtils.Katottg.Benchmarks -- --job short --filter "*"
 ```
 
+Сайт (VitePress, Node 24 з `site/.nvmrc`): тести й збірка, як у CI.
+
+```bash
+cd site && npm ci && npm test && npm run build
+```
+
+Локальний перегляд сайту з перезавантаженням:
+
+```bash
+cd site && npm run dev
+```
+
+Сторінка релізів будується з GitHub Releases API під час збірки. У CI (змінна `CI`) помилка API
+валить збірку, локально — лише попередження й порожній список; токен береться з `GITHUB_TOKEN`.
+
 SDK зафіксовано в `global.json` (.NET 10, `rollForward: latestFeature`). Повний прогін тестів триває
 кілька секунд і використовує повний офіційний файл з `OfficialData/`.
 
@@ -38,6 +53,9 @@ Tests/UkrUtils.Katottg.Tests/       xUnit v3; Fixtures/ — генератор x
 Tests/UkrUtils.Katottg.Benchmarks/  BenchmarkDotNet
 OfficialData/                       архів офіційних xlsx (katottg-YY-MM-DD.xlsx) — джерело знімка
 Docs/                               план, посібник для агентів
+Docs/en/                            англійські переклади README та посібника для агентів
+site/                               сайт GitHub Pages (VitePress, UA + EN); вставляє README.md,
+                                    Docs/AgentGuide.md і Docs/en/*, сторінка релізів — з GitHub API
 ```
 
 ## Оновлення даних (нова редакція кодифікатора)
@@ -62,6 +80,9 @@ Docs/                               план, посібник для агент
 Реліз запускається однією кнопкою: **Actions → Release → Run workflow** (гілка `main`).
 Workflow лежить у [.github/workflows/release.yml](.github/workflows/release.yml).
 
+Workflow також оновлює сайт: job `pages` викликає `pages.yml` після `publish` (релізи, створені
+через `GITHUB_TOKEN`, не запускають інших workflow, тож сторінка релізів оновлюється саме так).
+
 1. У PR підвищте `PackageVersion` (а також `FileVersion`, `AssemblyVersion`,
    `InformationalVersion`, `VersionDate`) у `Source/Directory.Build.props` і злийте його в `main`.
    Версія з дефісом (`1.1.0-beta.1`) стає prerelease.
@@ -81,6 +102,10 @@ Workflow лежить у [.github/workflows/release.yml](.github/workflows/relea
 - **GitHub → Settings → Secrets and variables → Actions → Variables**: змінна `NUGET_USER` — ім’я
   профілю на nuget.org, а не email.
 
+- **GitHub → Settings → Pages → Source: GitHub Actions** (для сайту).
+- **PayPal Donate button:** `PAYPAL_BUTTON_ID` у `site/.vitepress/site.config.js`. Якщо порожній,
+  кнопку приховано, а збірка попереджає.
+
 API-ключі не зберігаються: `NuGet/login` обмінює OIDC-токен GitHub на короткоживучий ключ.
 
 ## Правила коду
@@ -93,6 +118,8 @@ API-ключі не зберігаються: `NuGet/login` обмінює OIDC-
   XML-doc; `GenerateDocumentationFile` увімкнено, тож пропущена документація видно як попередження CS1591.
 - **TDD:** спершу тест, переконайтеся, що він падає, потім реалізація. Перевіряйте на реальних даних:
   `FixtureDataset.Official` (повний файл) або `FixtureDataset.Value` (44 рядки).
+- Змінюючи `README.md` або `Docs/AgentGuide.md`, оновлюйте `Docs/en/*` у тому самому PR; сайт
+  вставляє ці файли, копій немає.
 - Приклади з README і `Docs/AgentGuide.md` дублюються в `DocsExamplesTests.cs`. Змінюючи API,
   оновлюйте всі три місця.
 - Нетипові місця даних (Київ/Севастополь `K` без району й громади, Прип’ять/Чорнобиль `M` під
@@ -110,6 +137,10 @@ API-ключі не зберігаються: `NuGet/login` обмінює OIDC-
   приймає обидва варіанти.
 - Не вирішуйте за маркером категорії в пошуку остаточно: у реальних адресах категорію часто вказують
   неточно (див. fallback у `KatottgDataset.Search.cs`).
+- У markdown, який вставляє сайт, сирі `<…>` і `{{` поза кодом ламають збірку VitePress — беріть їх
+  у бектики.
+- `editLink.pattern` у `site/.vitepress/config.mts` має лишатися самодостатньою функцією: VitePress
+  серіалізує її в клієнтський бандл, тож змінні рівня модуля там не визначені.
 
 ## Git
 
