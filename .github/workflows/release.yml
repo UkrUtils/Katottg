@@ -59,7 +59,8 @@ jobs:
           {
             echo "### Release v$version"
             echo "Вбудована редакція: \`$edition\`"
-            [[ "${{ inputs.dry-run }}" == "true" ]] && echo "**Dry run** — нічого не опубліковано."
+            # if, а не `[[ … ]] && echo`: інакше без dry-run останній статус кроку — 1.
+            if [[ "${{ inputs.dry-run }}" == "true" ]]; then echo "**Dry run** — нічого не опубліковано."; fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guard — tag must not exist
