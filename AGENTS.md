@@ -101,7 +101,6 @@ Workflow також оновлює сайт: job `pages` викликає `pages
   `main` і додайте обов’язкових рецензентів (тоді «одна кнопка» плюс схвалення).
 - **GitHub → Settings → Secrets and variables → Actions → Variables**: змінна `NUGET_USER` — ім’я
   профілю на nuget.org, а не email.
-
 - **GitHub → Settings → Pages → Source: GitHub Actions** (для сайту).
 - **PayPal Donate button:** `PAYPAL_BUTTON_ID` у `site/.vitepress/site.config.js`. Якщо порожній,
   кнопку приховано, а збірка попереджає.

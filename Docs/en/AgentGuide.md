@@ -18,7 +18,7 @@ district, community, settlement, city district) has a code `UA` + 17 digits. The
 embedded official edition (31,751 records) and works without a network.
 
 ```csharp
-using UkrUtils.Katottg;                 // everything main
+using UkrUtils.Katottg;                 // the main types
 using UkrUtils.Katottg.Search;          // only KatottgNormalizer, ApostropheHandling
 using UkrUtils.Katottg.Import;          // the UkrUtils.Katottg.Import package: xlsx parsing
 
