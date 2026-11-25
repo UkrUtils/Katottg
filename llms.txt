@@ -1,6 +1,6 @@
 # UkrUtils.Katottg
 
-> .NET 10 library for the Ukrainian KATOTTG codifier (Кодифікатор адміністративно-територіальних одиниць та територій територіальних громад): code parsing/validation, hierarchy (region → district → community → settlement → city district), search by name/address/code, official xlsx import. Official data (31,751 units) is embedded; no network needed. Docs are in Ukrainian with English translations; identifiers are in English.
+> .NET 10 library for the Ukrainian KATOTTG codifier (Кодифікатор адміністративно-територіальних одиниць та територій територіальних громад): code parsing/validation, hierarchy (region → district → community → settlement → city district), search by name/address/code, official xlsx import. Official data (31,744 units) is embedded; no network needed. Docs are in Ukrainian with English translations; identifiers are in English.
 
 Key rules: the KATOTTG code ("UA" + 17 digits) is the unique key, never the name. Store only the lowest-level code; parents come from `KatottgDataset.Find(code)` or the SQL prefix `KatottgCode.HierarchyPrefix`. Pass free-text addresses straight to `KatottgDataset.Search`. Levels may be missing (Kyiv, Sevastopol, Prypiat), so check for null.
 

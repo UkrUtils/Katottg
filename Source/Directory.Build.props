@@ -1,14 +1,14 @@
 <Project>
     <PropertyGroup>
         <AssemblyProduct>UkrUtils.Katottg</AssemblyProduct>
-        <FileVersion>1.0.1.2</FileVersion>
-        <AssemblyVersion>1.0.1.2</AssemblyVersion>
-        <InformationalVersion>1.0.1.2</InformationalVersion>
-        <PackageVersion>1.0.1</PackageVersion>
+        <FileVersion>1.1.0.3</FileVersion>
+        <AssemblyVersion>1.1.0.3</AssemblyVersion>
+        <InformationalVersion>1.1.0.3</InformationalVersion>
+        <PackageVersion>1.1.0</PackageVersion>
 
         <!-- The UTC moment the version above was set, ISO 8601. Moves with every version bump — any
              segment, revision included — and never on its own; see Docs/Contributing.md, "Versioning". -->
-        <VersionDate>2026-11-05T12:01:31Z</VersionDate>
+        <VersionDate>2026-11-25T13:39:53Z</VersionDate>
 
         <Authors>Eugene Yakush</Authors>
         <Company>UkrUtils</Company>

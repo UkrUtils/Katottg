@@ -24,16 +24,16 @@ The ministry's domain has already changed several times (minregion → mtu → m
 its page returned HTTP 522. That is why the library never touches the network at run time: the data is
 embedded, and every source xlsx is archived in `OfficialData/` as `katottg-YY-MM-DD.xlsx`.
 
-### 1.2 Physical layout (edition of 03.11.2026)
+### 1.2 Physical layout (edition of 25.11.2026)
 
 | What | Value |
 |---|---|
 | Sheets | one, `Кодифікатор` |
-| Row 1 | the approval stamp "ЗАТВЕРДЖЕНО наказом … від 26.11.2020 № 290 (в редакції наказу … від 12.01.2021 № 3)", in column F, with `\n` inside |
-| Row 2 | the title "Кодифікатор адміністративно-територіальних одиниць…" |
-| Row 3 | the column header (A–G): `Перший рівень`, `Другий рівень`, `Третій рівень`, `Четвертий рівень`, `Додатковий рівень`, `Категорія об’єкта`, `Назва об’єкта` |
-| Rows 4–31754 | data: **31,751 records** |
-| Row 31755 | the note "Примітка. Коди Автономної Республіки Крим … набирають чинності з моменту повернення …" |
+| Row 1 | the approval stamp "ЗАТВЕРДЖЕНО наказом … від 26 листопада 2020 року № 290 (в редакції наказу … від 19 січня 2024 року № 48)", in column F, with `\n` inside |
+| Row 2 | empty |
+| Row 3 | the title "Кодифікатор адміністративно-територіальних одиниць…" |
+| Row 4 | the column header (A–G): `Перший рівень`, `Другий рівень`, `Третій рівень`, `Четвертий рівень`, `Додатковий рівень`, `Категорія об’єкта`, `Назва об’єкта` |
+| Rows 5–31748 | data: **31,744 records** |
 | Size | 1.5 MB xlsx; 10 MB `sheet1.xml`; 1.8 MB `sharedStrings.xml` |
 
 Each row is the **full path** to a unit: the level columns 1…N hold the codes of all ancestors and of
@@ -48,16 +48,19 @@ between levels.
 | `K` | city with special status (Kyiv, Sevastopol) | 1 | 2 |
 | `P` | district | 2 | 136 |
 | `H` | territorial community | 3 | 1,772 |
-| `M` | city | 4 | 459 |
-| `T` | urban-type settlement | 4 | 881 |
-| `X` | settlement | 4 | 1,164 |
-| `C` | village | 4 | 27,204 |
+| `M` | city | 4 | 461 |
+| `T` | urban-type settlement | 4 | 0 (abolished, see below) |
+| `X` | settlement | 4 | 1,979 |
+| `C` | village | 4 | 27,261 |
 | `B` | city district | 5 (additional) | 108 |
 
 The category letters in the file are **Latin** (U+0043 and so on), but they look exactly like Cyrillic
 letters (С, Н, Х, Т, М, Р, В, О, К), so `KatottgCategoryExtensions.FromLetter` accepts both. The law
-that abolishes urban-type settlements is gradually removing category `T`, and new letters may appear,
-so the set of categories is not closed: unknown letters become `KatottgCategory.Unknown`.
+that abolishes urban-type settlements removed category `T` in the edition of 25.11.2026: 878 former
+urban-type settlements became settlements (`X`), 2 became cities and 1 a village, while 63 former
+settlements became villages. `KatottgCategory.UrbanTypeSettlement` stays in the API for earlier
+editions. New letters may appear, so the set of categories is not closed: unknown letters become
+`KatottgCategory.Unknown`.
 
 ### 1.4 Code format
 
@@ -73,7 +76,7 @@ UA 01 02 003 001 00 43419
    └────────────────── region (01..85)
 ```
 
-Verified on all 31,751 records (and kept verified by tests on the full file):
+Verified on all 31,744 records (and kept verified by tests on the full file):
 
 - every code matches `^UA\d{17}$`;
 - unit codes are unique;
@@ -100,12 +103,12 @@ not tell the level: "level 3" is not always a community.
 | Issue | Count | What the library does |
 |---|---|---|
 | Trailing space in a name | 319 (313 of them in `H`) | trims on import and reports it as an info issue |
-| Latin `i` instead of `і` | 1 (`Вiйтовецька`) | keeps the original name; search treats the Latin look-alikes as Cyrillic |
-| Apostrophe `’` (U+2019) | 768 names | search folds all apostrophe variants (removes them by default) |
-| Hyphens | 624 names | search treats a hyphen as a space |
-| Repeated names | 17,574 distinct names for 30,708 settlements; "Іванівка" occurs 120 times | the name is never a key |
-| Repeated names within **one community** | 122 cases (for example `Липовець`, both M and X) | name + community is not a key either; `DisplayName` always shows the category |
-| Service rows (stamp, title, header, note) | 4 | the header is found by its text, not by its row number |
+| Latin `i` instead of `і` | 0 (the edition of 03.11.2026 had 1: `Вiйтовецька`) | keeps the original name and reports a warning; search treats the Latin look-alikes as Cyrillic |
+| Apostrophe `’` (U+2019) | 747 names | search folds all apostrophe variants (removes them by default) |
+| Hyphens | 614 names | search treats a hyphen as a space |
+| Repeated names | 17,587 distinct names for 29,701 settlements (`M`, `X`, `C`); "Іванівка" occurs 119 times | the name is never a key |
+| Repeated names within **one community** | 117 cases (for example `Липовець`, both M and X) | name + community is not a key either; `DisplayName` always shows the category |
+| Service rows (stamp, title, header; earlier editions also had a note on Crimea codes at the end) | 3 | the header is found by its text, not by its row number |
 
 ## 2. Design principles
 

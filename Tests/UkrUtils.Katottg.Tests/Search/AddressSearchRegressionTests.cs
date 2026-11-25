@@ -59,9 +59,12 @@ public class AddressSearchRegressionTests
         => Assert.Equal(expected, BestCode(text));
 
     [Fact]
-    public void SettlementMarker_PrefersSettlementOverUrbanType()
+    public void SettlementAndVillageMarkers_PickTheMarkedCategory()
     {
-        Assert.Equal("UA05060050320051164", BestCode("с-ще Браїлів"));
+        // З видання 2026-11-25 колишнє смт Браїлів — селище, а колишнє селище Браїлів — село
+        Assert.Equal("UA05060050020042300", BestCode("с-ще Браїлів"));
         Assert.Equal("UA05060050020042300", BestCode("смт Браїлів"));
+        Assert.Equal("UA05060050320051164", BestCode("с. Браїлів"));
     }
+
 }

@@ -16,7 +16,7 @@ hero:
       link: /donate
 features:
   - title: Embedded data
-    details: The official data ships in the package (~360 KB, 31,751 records); no network needed.
+    details: The official data ships in the package (~360 KB, 31,744 records); no network needed.
   - title: No dependencies
     details: The core has no dependencies; the dataset is immutable and thread-safe.
   - title: AOT and trimming
@@ -44,7 +44,7 @@ Console.WriteLine(unit!.FullName);
 // с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим
 
 // By name or address
-var hit = katottg.Search("смт Андріївка, Бердянський р-н, Запорізька обл.").Best!;
+var hit = katottg.Search("с-ще Андріївка, Бердянський р-н, Запорізька обл.").Best!;
 Console.WriteLine($"{hit.Unit.Code} {hit.Unit.FullName}");
-// UA23020030010042079 смт Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.
+// UA23020030010042079 с-ще Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.
 ```

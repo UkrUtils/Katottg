@@ -13,11 +13,11 @@ public class DocsExamplesTests
         var unit = Katottg.Find(KatottgCode.Parse("UA01020010010075540"));
         Assert.Equal("с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим", unit!.FullName);
 
-        var hit = Katottg.Search("смт Андріївка, Бердянський р-н, Запорізька обл.").Best!;
-        Assert.Equal("UA23020030010042079 смт Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.",
+        var hit = Katottg.Search("с-ще Андріївка, Бердянський р-н, Запорізька обл.").Best!;
+        Assert.Equal("UA23020030010042079 с-ще Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.",
             $"{hit.Unit.Code} {hit.Unit.FullName}");
-        Assert.Equal(new DateOnly(2026, 11, 3), Katottg.Edition.Date);
-        Assert.Equal(31_751, Katottg.Count);
+        Assert.Equal(new DateOnly(2026, 11, 25), Katottg.Edition.Date);
+        Assert.Equal(31_744, Katottg.Count);
     }
 
     [Fact]
