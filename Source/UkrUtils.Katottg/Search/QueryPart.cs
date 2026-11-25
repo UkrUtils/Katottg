@@ -16,7 +16,9 @@ internal sealed record QueryPart(string Text, string? Alias, KatottgCategory[]? 
     private static readonly KatottgCategory[] s_cities = [KatottgCategory.City, KatottgCategory.SpecialStatusCity];
     private static readonly KatottgCategory[] s_village = [KatottgCategory.Village];
     private static readonly KatottgCategory[] s_settlement = [KatottgCategory.Settlement, KatottgCategory.UrbanTypeSettlement];
-    private static readonly KatottgCategory[] s_urbanType = [KatottgCategory.UrbanTypeSettlement];
+    // З видання 2026-11-25 категорії смт у кодифікаторі немає: колишні смт стали селищами. Смт лишається
+    // первинною категорією для старих видань, а селище дозволене для нових.
+    private static readonly KatottgCategory[] s_urbanType = [KatottgCategory.UrbanTypeSettlement, KatottgCategory.Settlement];
     private static readonly KatottgCategory[] s_rural = [KatottgCategory.Village, KatottgCategory.Settlement, KatottgCategory.UrbanTypeSettlement];
     private static readonly KatottgCategory[] s_region = [KatottgCategory.Region];
     private static readonly KatottgCategory[] s_district = [KatottgCategory.District, KatottgCategory.CityDistrict];

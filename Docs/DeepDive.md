@@ -242,7 +242,10 @@ marker**:
   `міська` / `сільська` / `селищна`.
 
 A marker becomes a category filter, and its first category is the "primary" one (`с-ще` means
-settlement first, but also allows urban-type settlement). A part that consists only of a marker
+settlement first, but also allows urban-type settlement). `смт`, `пгт` and `селище міського типу` mean
+urban-type settlement first, but also allow settlement: since the edition of 25.11.2026 former
+urban-type settlements are settlements, and without that the marker would match nothing and fall back
+to every category, so "смт Тростянець" would find the city in Sumy region. A part that consists only of a marker
 ("Селище" while the user is still typing) is treated as a name. A few aliases are expanded: `АР Крим`
 and `АРК` mean "Автономна Республіка Крим".
 

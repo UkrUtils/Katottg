@@ -180,8 +180,9 @@ within one search.
 (district), `обл.` (region), `область` (region), `громада` (community), `ТГ` / `ОТГ` (territorial
 community), and "… міська/сільська/селищна територіальна громада" (city/rural/settlement territorial
 community). If nothing is found with the filter, the search is repeated without it: addresses often
-state the category inaccurately. `с-ще` also covers urban-type settlements, because that category is
-being abolished.
+state the category inaccurately. `с-ще` also covers urban-type settlements and `смт` also covers
+settlements, because that category has been abolished: since the edition of 25.11.2026 former
+urban-type settlements are settlements.
 
 **Normalization** (`UkrUtils.Katottg.Search.KatottgNormalizer`): lower case; Latin look-alikes inside
 Cyrillic words ("Вiйтовецька" with a Latin i); apostrophes ``' ’ ʼ ` ‘``; hyphens and periods; `ґ→г`,

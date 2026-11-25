@@ -67,4 +67,14 @@ public class AddressSearchRegressionTests
         Assert.Equal("UA05060050320051164", BestCode("с. Браїлів"));
     }
 
+    [Theory]
+    // Категорії смт у кодифікаторі вже немає: колишні смт стали селищами, тож «смт» не має
+    // відкочуватися до всіх категорій і віддавати місто чи село з такою самою назвою
+    [InlineData("смт Тростянець", "UA05040250010017575")]
+    [InlineData("смт Берегове", "UA01200270020097082")]
+    [InlineData("смт Чернівці", "UA05080090010025419")]
+    [InlineData("пгт Тростянець", "UA05040250010017575")]
+    [InlineData("селище міського типу Тростянець", "UA05040250010017575")]
+    public void UrbanTypeMarker_FindsFormerUrbanTypeSettlement(string text, string expected)
+        => Assert.Equal(expected, BestCode(text));
 }
