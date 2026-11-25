@@ -14,14 +14,14 @@ public class OfficialFileTests
         var report = Imported.Value.Report;
 
         Assert.False(report.HasErrors, string.Join("\n", report.Errors.Take(20)));
-        Assert.Equal(31_751, Imported.Value.Records.Count);
-        Assert.Equal(3, report.HeaderRow);
+        Assert.Equal(31_744, Imported.Value.Records.Count);
+        Assert.Equal(4, report.HeaderRow);
 
-        // Єдине попередження — латинська «i» у «Вiйтовецька»
-        var warning = Assert.Single(report.Warnings);
-        Assert.Equal(ImportIssueKind.LatinCharactersInName, warning.Kind);
+        // У виданні 2026-11-25 латинську «i» у «Війтовецька» виправлено — попереджень немає
+        Assert.Empty(report.Warnings);
         Assert.Equal(319, report.Issues.Count(i => i.Kind == ImportIssueKind.NameHasSurroundingWhitespace));
-        Assert.StartsWith("Примітка.", Assert.Single(report.Notes));
+        // Примітки про коди Криму в кінці аркуша в цьому виданні немає
+        Assert.Empty(report.Notes);
     }
 
     [Fact]
@@ -33,10 +33,11 @@ public class OfficialFileTests
         Assert.Equal(2, counts[KatottgCategory.SpecialStatusCity]);
         Assert.Equal(136, counts[KatottgCategory.District]);
         Assert.Equal(1_772, counts[KatottgCategory.Community]);
-        Assert.Equal(459, counts[KatottgCategory.City]);
-        Assert.Equal(881, counts[KatottgCategory.UrbanTypeSettlement]);
-        Assert.Equal(1_164, counts[KatottgCategory.Settlement]);
-        Assert.Equal(27_204, counts[KatottgCategory.Village]);
+        Assert.Equal(461, counts[KatottgCategory.City]);
+        // Категорію смт скасовано: колишні смт стали селищами (і кілька — містами чи селами)
+        Assert.False(counts.ContainsKey(KatottgCategory.UrbanTypeSettlement));
+        Assert.Equal(1_979, counts[KatottgCategory.Settlement]);
+        Assert.Equal(27_261, counts[KatottgCategory.Village]);
         Assert.Equal(108, counts[KatottgCategory.CityDistrict]);
         Assert.False(counts.ContainsKey(KatottgCategory.Unknown));
     }
@@ -45,8 +46,8 @@ public class OfficialFileTests
     public void EditionComesFromFileName()
     {
         var edition = Imported.Value.Edition;
-        Assert.Equal(new DateOnly(2026, 11, 3), edition.Date);
-        Assert.Equal("katottg-26-11-03.xlsx", edition.Source);
+        Assert.Equal(new DateOnly(2026, 11, 25), edition.Date);
+        Assert.Equal("katottg-26-11-25.xlsx", edition.Source);
         Assert.Equal(64, edition.Sha256!.Length);
     }
 

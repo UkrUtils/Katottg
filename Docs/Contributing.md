@@ -82,7 +82,7 @@ site/                               the GitHub Pages site (VitePress, EN at the 
 
 ## Testing
 
-- **Codes:** `Parse` / `TryParse` / `ToString` round-trip for all 31,751 codes; invalid input;
+- **Codes:** `Parse` / `TryParse` / `ToString` round-trip for all 31,744 codes; invalid input;
   segments; `ParentPrefix`.
 - **Import:** a fixture of 44 official rows covering AR Crimea, Kyiv with its districts, Prypiat, a city
   with districts (Kharkiv), names with a trailing space, a Latin `i` and apostrophes. The full official

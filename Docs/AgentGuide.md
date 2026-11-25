@@ -15,7 +15,7 @@ https://github.com/UkrUtils/Katottg/blob/main/Docs/AgentGuide.md
 
 KATOTTG is the official Ukrainian codifier of administrative-territorial units. Every unit (region,
 district, community, settlement, city district) has a code `UA` + 17 digits. The library contains the
-embedded official edition (31,751 records) and works without a network. Unit names are Ukrainian, as in
+embedded official edition (31,744 records) and works without a network. Unit names are Ukrainian, as in
 the official file.
 
 ```csharp
@@ -81,7 +81,7 @@ var katottg = KatottgDataset.Embedded;  // singleton; immutable; thread-safe
 | `P` | `District` — district | `O` | "Харківський р-н" |
 | `H` | `Community` — territorial community | `P` | "Харківська громада" |
 | `M` | `City` — city | `H` (Prypiat, Chornobyl — `O`) | "м. Харків" |
-| `T` | `UrbanTypeSettlement` — urban-type settlement | `H` | "смт Андріївка" |
+| `T` | `UrbanTypeSettlement` — urban-type settlement; abolished, absent from the data since the edition of 25.11.2026 | `H` | "смт Андріївка" |
 | `X` | `Settlement` — settlement | `H` | "с-ще Липовець" |
 | `C` | `Village` — village | `H` | "с. Андріївка" |
 | `B` | `CityDistrict` — city district | `M` or `K` | "Шевченківський р-н" |

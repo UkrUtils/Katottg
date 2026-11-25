@@ -11,7 +11,7 @@ Site and documentation: https://ukrutils.github.io/Katottg/
 
 - Works out of the box: the official data ships inside the package (~360 KB), no network needed.
 - No dependencies, AOT- and trimming-friendly. The dataset is immutable and safe to share across threads.
-- Embedded edition: **03.11.2026** (`KatottgDataset.Embedded.Edition`), 31,751 records.
+- Embedded edition: **25.11.2026** (`KatottgDataset.Embedded.Edition`), 31,744 records.
 
 | Package | Purpose |
 |---|---|
@@ -36,9 +36,9 @@ Console.WriteLine(unit!.FullName);
 // с. Андріївка, Андріївська громада, Бахчисарайський р-н, АР Крим
 
 // By name or address
-var hit = katottg.Search("смт Андріївка, Бердянський р-н, Запорізька обл.").Best!;
+var hit = katottg.Search("с-ще Андріївка, Бердянський р-н, Запорізька обл.").Best!;
 Console.WriteLine($"{hit.Unit.Code} {hit.Unit.FullName}");
-// UA23020030010042079 смт Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.
+// UA23020030010042079 с-ще Андріївка, Андріївська громада, Бердянський р-н, Запорізька обл.
 ```
 
 ## Five rules worth knowing up front

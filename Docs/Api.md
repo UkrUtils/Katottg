@@ -70,7 +70,7 @@ If the tail of a code is lost or wrong, look the unit up with `FindBySignificant
 | `P` | `District` — district | `O` | "Харківський р-н" |
 | `H` | `Community` — territorial community | `P` | "Харківська громада" |
 | `M` | `City` — city | `H` (Prypiat, Chornobyl — `O`) | "м. Харків" |
-| `T` | `UrbanTypeSettlement` — urban-type settlement | `H` | "смт Андріївка" |
+| `T` | `UrbanTypeSettlement` — urban-type settlement; abolished, absent from the data since the edition of 25.11.2026 | `H` | "смт Андріївка" |
 | `X` | `Settlement` — settlement | `H` | "с-ще Липовець" |
 | `C` | `Village` — village | `H` | "с. Андріївка" |
 | `B` | `CityDistrict` — city district | `M` or `K` | "Шевченківський р-н" |
@@ -180,8 +180,9 @@ within one search.
 (district), `обл.` (region), `область` (region), `громада` (community), `ТГ` / `ОТГ` (territorial
 community), and "… міська/сільська/селищна територіальна громада" (city/rural/settlement territorial
 community). If nothing is found with the filter, the search is repeated without it: addresses often
-state the category inaccurately. `с-ще` also covers urban-type settlements, because that category is
-being abolished.
+state the category inaccurately. `с-ще` also covers urban-type settlements and `смт` also covers
+settlements, because that category has been abolished: since the edition of 25.11.2026 former
+urban-type settlements are settlements.
 
 **Normalization** (`UkrUtils.Katottg.Search.KatottgNormalizer`): lower case; Latin look-alikes inside
 Cyrillic words ("Вiйтовецька" with a Latin i); apostrophes ``' ’ ʼ ` ‘``; hyphens and periods; `ґ→г`,
@@ -192,7 +193,7 @@ see the [roadmap](https://ukrutils.github.io/Katottg/roadmap).
 
 ## Storing in a database
 
-**A unit's code is unique.** This has been verified on all 31,751 records of the official file: both
+**A unit's code is unique.** This has been verified on all 31,744 records of the official file: both
 the full codes and the 12 significant digits are unique. Import and `KatottgDataset.Create` reject
 duplicates.
 
@@ -246,7 +247,7 @@ code-replacement hints (`KatottgDiff`) are on the [roadmap](https://ukrutils.git
 ```csharp
 using UkrUtils.Katottg.Import;
 
-var result = KatottgSheetParser.Parse("katottg-26-11-03.xlsx");   // the edition date comes from the file name
+var result = KatottgSheetParser.Parse("katottg-26-11-25.xlsx");   // the edition date comes from the file name
 if (result.Report.HasErrors)
     foreach (var e in result.Report.Errors) Console.WriteLine(e);
 var dataset = result.CreateDataset();
@@ -270,7 +271,7 @@ katottg search "Шевченківський р-н, м. Харків" --tree
 ```
 
 ```bash
-katottg import OfficialData/katottg-26-11-03.xlsx --verbose
+katottg import OfficialData/katottg-26-11-25.xlsx --verbose
 ```
 
 ```bash

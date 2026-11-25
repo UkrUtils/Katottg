@@ -70,7 +70,7 @@ code.ParentPrefix;      // UA01020030000000000 — лише префікс ба�
 | `P` | `District` — район | `O` | «Харківський р-н» |
 | `H` | `Community` — територіальна громада | `P` | «Харківська громада» |
 | `M` | `City` — місто | `H` (Прип’ять, Чорнобиль — `O`) | «м. Харків» |
-| `T` | `UrbanTypeSettlement` — СМТ | `H` | «смт Андріївка» |
+| `T` | `UrbanTypeSettlement` — СМТ; скасовано, у даних немає з редакції від 25.11.2026 | `H` | «смт Андріївка» |
 | `X` | `Settlement` — селище | `H` | «с-ще Липовець» |
 | `C` | `Village` — село | `H` | «с. Андріївка» |
 | `B` | `CityDistrict` — район у місті | `M` або `K` | «Шевченківський р-н» |
@@ -178,7 +178,8 @@ IReadOnlyList<KatottgSearchHit> hits = katottg.Search(new KatottgQuery
 **Маркери категорій** стають фільтром: `с.`, `село`, `м.`, `місто`, `смт`, `с-ще`, `селище`, `р-н`,
 `район`, `обл.`, `область`, `громада`, `ТГ` / `ОТГ`, «… міська/сільська/селищна територіальна
 громада». Якщо з фільтром нічого не знайдено, пошук повторюється без нього: категорію в адресах часто
-вказують неточно. `с-ще` охоплює й СМТ, бо категорію СМТ скасовують.
+вказують неточно. `с-ще` охоплює й СМТ, а `смт` — і селища, бо категорію СМТ скасовано: з редакції від
+25.11.2026 колишні СМТ — це селища.
 
 **Нормалізація** (`UkrUtils.Katottg.Search.KatottgNormalizer`): нижній регістр; латинські двійники в
 кириличних словах («Вiйтовецька» з латинською i); апострофи ``' ’ ʼ ` ‘``; дефіси й крапки; `ґ→г`,
@@ -189,7 +190,7 @@ IReadOnlyList<KatottgSearchHit> hits = katottg.Search(new KatottgQuery
 
 ## Зберігання в базі даних
 
-**Код об’єкта унікальний.** Це перевірено на всіх 31 751 записах офіційного файлу: унікальні і повні
+**Код об’єкта унікальний.** Це перевірено на всіх 31 744 записах офіційного файлу: унікальні і повні
 коди, і 12 значущих цифр. Імпорт і `KatottgDataset.Create` відкидають дублікати.
 
 Тому **зберігайте лише код найнижчого рівня** (село, місто, район у місті). Батьківські коди
@@ -241,7 +242,7 @@ IReadOnlyList<KatottgSearchHit> hits = katottg.Search(new KatottgQuery
 ```csharp
 using UkrUtils.Katottg.Import;
 
-var result = KatottgSheetParser.Parse("katottg-26-11-03.xlsx");   // дата редакції — з імені файлу
+var result = KatottgSheetParser.Parse("katottg-26-11-25.xlsx");   // дата редакції — з імені файлу
 if (result.Report.HasErrors)
     foreach (var e in result.Report.Errors) Console.WriteLine(e);
 var dataset = result.CreateDataset();
@@ -265,7 +266,7 @@ katottg search "Шевченківський р-н, м. Харків" --tree
 ```
 
 ```bash
-katottg import OfficialData/katottg-26-11-03.xlsx --verbose
+katottg import OfficialData/katottg-26-11-25.xlsx --verbose
 ```
 
 ```bash

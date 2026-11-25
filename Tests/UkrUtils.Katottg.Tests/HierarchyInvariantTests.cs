@@ -70,10 +70,10 @@ public class HierarchyInvariantTests
         Assert.Equal(2, Data.GetByCategory(KatottgCategory.SpecialStatusCity).Count);
         Assert.Equal(136, Data.GetByCategory(KatottgCategory.District).Count);
         Assert.Equal(1_772, Data.GetByCategory(KatottgCategory.Community).Count);
-        Assert.Equal(459, Data.GetByCategory(KatottgCategory.City).Count);
-        Assert.Equal(881, Data.GetByCategory(KatottgCategory.UrbanTypeSettlement).Count);
-        Assert.Equal(1_164, Data.GetByCategory(KatottgCategory.Settlement).Count);
-        Assert.Equal(27_204, Data.GetByCategory(KatottgCategory.Village).Count);
+        Assert.Equal(461, Data.GetByCategory(KatottgCategory.City).Count);
+        Assert.Empty(Data.GetByCategory(KatottgCategory.UrbanTypeSettlement));
+        Assert.Equal(1_979, Data.GetByCategory(KatottgCategory.Settlement).Count);
+        Assert.Equal(27_261, Data.GetByCategory(KatottgCategory.Village).Count);
         Assert.Equal(108, Data.GetByCategory(KatottgCategory.CityDistrict).Count);
     }
 
